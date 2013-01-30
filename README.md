@@ -1,4 +1,19 @@
-11411-QA
+11-411 Question and Answer
 ========
 
-Question and Answering NLP programs for 11-411
+
+Compile
+------
+- Run `make` to get the binaries `ask` and `answer`
+- Run `make clean` to clean the directory
+
+Execute
+--------
+- Ask: `./ask article.txt 10`
+- Answer: `./answer article.txt questions.txt`
+
+Team
+----
+- Manish Burman
+- Shannon Joyner
+- Isaac Lim
