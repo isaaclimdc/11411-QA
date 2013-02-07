@@ -28,7 +28,6 @@ char *readArticleFile(char *filePath) {
     }
 
     free(buffer);
-    printf("Article:\n\n%s\n\n--------\n\n", text);
     return text;
 }
 
@@ -82,9 +81,6 @@ int main(int argc, char **argv) {
     int nqns;
     char **qns = readQnFile(qnsFilePath, &nqns);
 
-    printf("Here are the answers to the %d questions about \"%s\":\n\n",
-        nqns, articleFilePath);
-
     /*
      * Iterate through the array of questions, answer each and print
      * the resulting question and answer.
@@ -92,8 +88,8 @@ int main(int argc, char **argv) {
     for (int i = 0; i < nqns; i++) {
         char *qn = qns[i];
         char *ans = answerQn(qn, article);
-        printf("Q%d:\t\"%s\"\n", i+1, qn);
-        printf("A%d:\t\"%s\"\n\n", i+1, ans);
+        printf("Q%d from %s: \"%s\", ", i+1, qnsFilePath, qn);
+        printf("and its answer: \"%s\"\n", ans);
     }
 
     fflush(stdout);  /* Make sure we print everything to stdout */

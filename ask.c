@@ -27,7 +27,6 @@ char *readArticleFile(char *filePath) {
     }
 
     free(buffer);
-    printf("Article:\n\n%s\n\n--------\n\n", article);
     return article;
 }
 
@@ -42,14 +41,11 @@ int main(int argc, char **argv) {
 
     char *article = readArticleFile(filePath);
 
-    printf("Here are %d questions about \"%s\":\n\n", nqns, filePath);
-
     for (int i = 0; i < nqns; i++) {
         char *qn = generateQn(article);
-        printf("Q%d:\t\"%s\"\n", i+1, qn);
+        printf("Q%d from %s: \"%s\"\n", i+1, filePath, qn);
     }
-
-    printf("\n");
+    
     fflush(stdout);  /* Make sure printf works */
 
     return 0;
