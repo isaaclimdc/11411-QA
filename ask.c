@@ -52,7 +52,5 @@ int main(int argc, char **argv) {
     printf("\n");
     fflush(stdout);  /* Make sure printf works */
 
-    free(article);
-
     return 0;
 }
