@@ -84,11 +84,10 @@ def computeDistances(questionFile, answerFile):
         memo = dict()
         for answer in answerArray:
           exclude = set(string.punctuation)
-          answer_without_punctuations = ''.join(ch for ch in answer if ch not in exclude)
-          question_without_punctuations = ''.join(ch for ch in question if ch not in exclude)
+          answer_edited = ''.join(ch for ch in answer.lower() if ch not in exclude)
+          question_edited = ''.join(ch for ch in question.lower() if ch not in exclude)
 
-          count = damerauDistance(splitSentence(question_without_punctuations),
-              splitSentence(answer_without_punctuations), memo)
+          count = damerauDistance(splitSentence(question_edited), splitSentence(answer_edited), memo)
 
           if (count < sentenceDistance):
                 closestSentence = answer
