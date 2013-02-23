@@ -2,7 +2,7 @@
 
 import sys,string
 
-INSERTION_COST = 1
+INSERTION_COST = 0
 DELETION_COST = 1
 REPLACEMENT_COST = 1
 
