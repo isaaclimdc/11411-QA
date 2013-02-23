@@ -1,13 +1,13 @@
 #!/usr/local/bin/python
 
-import sys
+import sys,string
 def levenshteinDistance(word1, word2, memo):
 	len1 = len(word1)
 	len2 = len(word2)
 
 	if (word1 == ""): return len2
 	if (word2 == ""): return len1
-	
+
 	key = str([word1, word2])
 	if key in memo:
 		return memo[key]
@@ -17,7 +17,7 @@ def levenshteinDistance(word1, word2, memo):
 	if (word1[len1-1] == word2[len2-1]):
 		count = levenshteinDistance(word1MinusOne, word2MinusOne, memo)
 	else:
-		count1 = levenshteinDistance(word1MinusOne,word2, memo) + 1 
+		count1 = levenshteinDistance(word1MinusOne,word2, memo) + 1
 		count2 = levenshteinDistance(word1, word2MinusOne, memo) + 1
 		count3 = levenshteinDistance(word1MinusOne, word2MinusOne, memo) + 1
 		count = min(count1, count2, count3)
@@ -30,7 +30,7 @@ def splitSentence(sentence):
                 s[i] = s[i].strip()
         return s
 
-def damerauDistance(s1, s2, memo):        
+def damerauDistance(s1, s2, memo):
         len1 = len(s1)
         len2 = len(s2)
 
@@ -58,7 +58,7 @@ def damerauDistance(s1, s2, memo):
                                                              s2[:len2-2],
                                                          memo) + 1
 
-                count1 = damerauDistance(sentence1MinusOne,s2, memo) + 1 
+                count1 = damerauDistance(sentence1MinusOne,s2, memo) + 1
                 count2 = damerauDistance(s1, sentence2MinusOne, memo) + 1
                 count3 = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo) + 1
                 count = min(count1, count2, count3, count4)
@@ -83,20 +83,26 @@ def computeDistances(questionFile, answerFile):
         sentenceDistance = float("infinity")
         memo = dict()
         for answer in answerArray:
-            count = damerauDistance(splitSentence(question), splitSentence(answer), memo)
-            if (count < sentenceDistance):
+          exclude = set(string.punctuation)
+          answer_without_punctuations = ''.join(ch for ch in answer if ch not in exclude)
+          question_without_punctuations = ''.join(ch for ch in question if ch not in exclude)
+
+          count = damerauDistance(splitSentence(question_without_punctuations),
+              splitSentence(answer_without_punctuations), memo)
+
+          if (count < sentenceDistance):
                 closestSentence = answer
                 sentenceDistance = count
         print "Question sentence: " + question
         print "Answer sentence: " + closestSentence
         print "Damerau distance: " + str(sentenceDistance) + "\n"
-        
+
         # output.write("Question sentence: " + question + "\n")
         # output.write("Answer sentence: " + closestSentence + "\n")
         # output.write("Damerau distance: " + str(sentenceDistance) + "\n\n")
     # output.close()
 
-    
+
 
 if __name__ == '__main__':
     computeDistances(sys.argv[1], sys.argv[2])
