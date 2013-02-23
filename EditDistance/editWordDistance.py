@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 import sys
 def levenshteinDistance(word1, word2, memo):
 	len1 = len(word1)
@@ -72,10 +74,10 @@ def makeSentenceArray(inputFile):
 	return sentences
 
 
-def computeDistances(questionFile, mode, outputFile, answerFile):
+def computeDistances(questionFile, answerFile):
     answerArray = makeSentenceArray(answerFile)
     questionArray = makeSentenceArray(questionFile)
-    output = open(outputFile, "w")
+    # output = open(outputFile, "w")
     for question in questionArray:
         closestAnswer = ""
         sentenceDistance = float("infinity")
@@ -89,12 +91,12 @@ def computeDistances(questionFile, mode, outputFile, answerFile):
         print "Answer sentence: " + closestSentence
         print "Damerau distance: " + str(sentenceDistance) + "\n"
         
-        output.write("Question sentence: " + question + "\n")
-        output.write("Answer sentence: " + closestSentence + "\n")
-        output.write("Damerau distance: " + str(sentenceDistance) + "\n\n")
-    output.close()
+        # output.write("Question sentence: " + question + "\n")
+        # output.write("Answer sentence: " + closestSentence + "\n")
+        # output.write("Damerau distance: " + str(sentenceDistance) + "\n\n")
+    # output.close()
 
     
 
 if __name__ == '__main__':
-    computeDistances(sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4])
+    computeDistances(sys.argv[1], sys.argv[2])
