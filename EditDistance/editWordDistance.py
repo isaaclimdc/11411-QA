@@ -46,9 +46,15 @@ def cleanQuestion(question):
   # TODO(mburman): there's probably a better way to do this
   # It's important to maintain ordering here - multi word phrases should come
   # earlier in the list so that we can replace maximally.
+  # Note: is should probably not be a bad start phrase by itself
   bad_start_phrase = [
-      'how many', 'when did', 'why did',
-      'what', 'where', 'why', 'when', 'who', 'how', 'did', 'name']
+      'how many',
+      'when did', 'why did', 'where did', 'who did', 'what did'
+      'when was', 'why was', 'where was', 'who was', 'what was',
+      'what does'
+      'name the', 'is the'
+      'what', 'where', 'why', 'when', 'who', 'which', 'how', 'did', 'name',
+      'does']
 
   # If a bad phrase is present in the beginning of a question, replace it.
   for bad_phrase in bad_start_phrase:
