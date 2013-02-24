@@ -6,6 +6,29 @@ INSERTION_COST = 0
 DELETION_COST = 1
 REPLACEMENT_COST = 1
 
+def levenshteinDistance(word1, word2, memo):
+	len1 = len(word1)
+	len2 = len(word2)
+
+	if (word1 == ""): return len2
+	if (word2 == ""): return len1
+
+	key = str([word1, word2])
+	if key in memo:
+		return memo[key]
+
+	word1MinusOne = word1[:(len1-1)]
+	word2MinusOne = word2[:(len2-1)]
+	if (word1[len1-1] == word2[len2-1]):
+		count = levenshteinDistance(word1MinusOne, word2MinusOne, memo)
+	else:
+		count1 = levenshteinDistance(word1MinusOne,word2, memo) + 1
+		count2 = levenshteinDistance(word1, word2MinusOne, memo) + 1
+		count3 = levenshteinDistance(word1MinusOne, word2MinusOne, memo) + 1
+		count = min(count1, count2, count3)
+	memo[key] = count
+	return count
+
 def splitSentence(sentence):
   s = sentence.split()
   for i in range(len(s)):
@@ -49,7 +72,14 @@ def damerauDistance(s1, s2, memo):
           return memo[key]
   sentence1MinusOne = s1[:(len1-1)]
   sentence2MinusOne = s2[:(len2-1)]
-  if (s1[len1-1] == s2[len2-1]):
+
+  # TODO(mburman): Make the edit distance level depend on word size.
+  # Instead of direct word comparison to see if two words are equal, say they're
+  # equal if the levenshtein distance is less than some number. This helps us
+  # identify similar words (eg 'contribute' and 'contributed' would now be the
+  # same word)
+  distance_between_words = levenshteinDistance(s1[len1-1], s2[len2-1], dict())
+  if (distance_between_words < 3):
     count = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo)
   else:
     count4 = float("infinity")
@@ -106,4 +136,4 @@ def computeDistances(questionFile, answerFile):
 
 
 if __name__ == '__main__':
-    computeDistances(sys.argv[1], sys.argv[2])
+  computeDistances(sys.argv[1], sys.argv[2])
