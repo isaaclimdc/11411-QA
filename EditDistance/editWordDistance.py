@@ -6,6 +6,8 @@ INSERTION_COST = 0
 DELETION_COST = 1
 REPLACEMENT_COST = 1
 
+WORD_THRESHOLD = 2
+
 def levenshteinDistance(word1, word2, memo):
 	len1 = len(word1)
 	len2 = len(word2)
@@ -69,7 +71,7 @@ def damerauDistance(s1, s2, memo):
 
   key = str([s1, s2])
   if key in memo:
-          return memo[key]
+    return memo[key]
   sentence1MinusOne = s1[:(len1-1)]
   sentence2MinusOne = s2[:(len2-1)]
 
@@ -79,7 +81,7 @@ def damerauDistance(s1, s2, memo):
   # identify similar words (eg 'contribute' and 'contributed' would now be the
   # same word)
   distance_between_words = levenshteinDistance(s1[len1-1], s2[len2-1], dict())
-  if (distance_between_words < 3):
+  if (distance_between_words <= WORD_THRESHOLD):
     count = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo)
   else:
     count4 = float("infinity")
@@ -89,6 +91,8 @@ def damerauDistance(s1, s2, memo):
        lastWordSentence2 = s2[len2-1]
        secondLastWordSentence2 = s2[len2-2]
 
+       # TODO(mburman): I'm not sure if this is correct? Shouldn't you be able
+       # to interchange ANY two words in a sentence?
        # Word transposition.
        if ((lastWordSentence1 == secondLastWordSentence2) and
            (lastWordSentence2 == secondLastWordSentence1)):
@@ -116,7 +120,6 @@ def makeSentenceArray(inputFile):
 def computeDistances(questionFile, answerFile):
   answerArray = makeSentenceArray(answerFile)
   questionArray = makeSentenceArray(questionFile)
-  # output = open(outputFile, "w")
   for question in questionArray:
       closestAnswer = ""
       sentenceDistance = float("infinity")
