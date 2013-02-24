@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-
+# Test commit
 import sys,string
 
 INSERTION_COST = 0
