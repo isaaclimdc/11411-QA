@@ -5,6 +5,7 @@ import sys,string
 INSERTION_COST = 0
 DELETION_COST = 1
 REPLACEMENT_COST = 1
+TRANSPOSITION_COST = 1
 
 WORD_THRESHOLD = 2
 
@@ -91,18 +92,16 @@ def damerauDistance(s1, s2, memo):
        lastWordSentence2 = s2[len2-1]
        secondLastWordSentence2 = s2[len2-2]
 
-       # TODO(mburman): I'm not sure if this is correct? Shouldn't you be able
-       # to interchange ANY two words in a sentence?
-       # Word transposition.
-       if ((lastWordSentence1 == secondLastWordSentence2) and
-           (lastWordSentence2 == secondLastWordSentence1)):
-         count4 = damerauDistance(s1[:len1-2], s2[:len2-2], memo) + \
+       # TODO(mburman): I don't think this if statement should be here.
+       # Shouldn't you be able to interchange ANY two words in a sentence?
+       #if ((lastWordSentence1 == secondLastWordSentence2) and
+       #    (lastWordSentence2 == secondLastWordSentence1)):
+       count4 = damerauDistance(s1[:len1-2], s2[:len2-2], memo) + \
              TRANSPOSITION_COST
 
     count1 = damerauDistance(sentence1MinusOne,s2, memo) + DELETION_COST
     count2 = damerauDistance(s1, sentence2MinusOne, memo) + INSERTION_COST
-    count3 = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo) + \
-        REPLACEMENT_COST
+    count3 = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo) + REPLACEMENT_COST
 
     count = min(count1, count2, count3, count4)
   memo[key] = count
