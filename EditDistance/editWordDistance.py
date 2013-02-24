@@ -96,14 +96,14 @@ def damerauDistance(s1, s2, memo):
        # Shouldn't you be able to interchange ANY two words in a sentence?
        #if ((lastWordSentence1 == secondLastWordSentence2) and
        #    (lastWordSentence2 == secondLastWordSentence1)):
-       count4 = damerauDistance(s1[:len1-2], s2[:len2-2], memo) + \
-             TRANSPOSITION_COST
+       #count4 = damerauDistance(s1[:len1-2], s2[:len2-2], memo) + \
+       #      TRANSPOSITION_COST
 
     count1 = damerauDistance(sentence1MinusOne,s2, memo) + DELETION_COST
     count2 = damerauDistance(s1, sentence2MinusOne, memo) + INSERTION_COST
     count3 = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo) + REPLACEMENT_COST
 
-    count = min(count1, count2, count3, count4)
+    count = min(count1, count2, count3) # count4)
   memo[key] = count
   return count
 
