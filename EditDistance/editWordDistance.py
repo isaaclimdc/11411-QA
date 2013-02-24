@@ -1,6 +1,7 @@
 #!/usr/local/bin/python
-# Test commit
-import sys,string
+
+import sys, string, re
+from nltk_helper import splitIntoSentences2
 
 INSERTION_COST = 0
 DELETION_COST = 1
@@ -42,7 +43,7 @@ def cleanQuestion(question):
   exclude = set(string.punctuation)
   question = ''.join(ch for ch in question.lower() if ch not in exclude)
 
-  #TODO(mburman): there's probably a better way to do this
+  # TODO(mburman): there's probably a better way to do this
   # It's important to maintain ordering here - multi word phrases should come
   # earlier in the list so that we can replace maximally.
   bad_start_phrase = [
@@ -81,8 +82,11 @@ def damerauDistance(s1, s2, memo):
   # equal if the levenshtein distance is less than some number. This helps us
   # identify similar words (eg 'contribute' and 'contributed' would now be the
   # same word)
-  distance_between_words = levenshteinDistance(s1[len1-1], s2[len2-1], dict())
-  if (distance_between_words <= WORD_THRESHOLD):
+  #distance_between_words = levenshteinDistance(s1[len1-1], s2[len2-1], dict())
+  #if (distance_between_words <= WORD_THRESHOLD):
+  # Actually, levenshtein like this becomes very expensive fast so stick with
+  # direct string comparison for now
+  if s1[len1-1] == s2[len2-1]:
     count = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo)
   else:
     count4 = float("infinity")
@@ -99,9 +103,20 @@ def damerauDistance(s1, s2, memo):
        #count4 = damerauDistance(s1[:len1-2], s2[:len2-2], memo) + \
        #      TRANSPOSITION_COST
 
-    count1 = damerauDistance(sentence1MinusOne,s2, memo) + DELETION_COST
+    # Numbers in a question are likely there for a reason. As a result, assign
+    # high cost to deleting words which contain numbers.
+    deleted_word = s1[len1-1];
+    dynamic_deletion_cost = DELETION_COST
+    dynamic_replacement_cost = REPLACEMENT_COST
+    _digits = re.compile('\d')
+    if _digits.search(deleted_word):
+      dynamic_deletion_cost = 6
+      dynamic_replacement_cost = 6
+
+    count1 = damerauDistance(sentence1MinusOne,s2, memo) + dynamic_deletion_cost
     count2 = damerauDistance(s1, sentence2MinusOne, memo) + INSERTION_COST
-    count3 = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo) + REPLACEMENT_COST
+    count3 = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo) + \
+        dynamic_replacement_cost
 
     count = min(count1, count2, count3) # count4)
   memo[key] = count
@@ -117,7 +132,7 @@ def makeSentenceArray(inputFile):
 
 
 def computeDistances(questionFile, answerFile):
-  answerArray = makeSentenceArray(answerFile)
+  answerArray = splitIntoSentences2(answerFile)
   questionArray = makeSentenceArray(questionFile)
   for question in questionArray:
       closestAnswer = ""
