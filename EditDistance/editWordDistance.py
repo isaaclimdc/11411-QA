@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 
 import sys, string, re
-from nltk_helper import splitIntoSentences2
+from nltk_helper import splitIntoSentences2, getSynonyms
 
 INSERTION_COST = 0
 DELETION_COST = 1
@@ -9,6 +9,9 @@ REPLACEMENT_COST = 1
 TRANSPOSITION_COST = 1
 
 WORD_THRESHOLD = 2
+
+# Synonym dict. Reset for every question.
+glob_syn_dict = dict()
 
 def levenshteinDistance(word1, word2, memo):
 	len1 = len(word1)
@@ -94,6 +97,9 @@ def damerauDistance(s1, s2, memo):
   # direct string comparison for now
   if s1[len1-1] == s2[len2-1]:
     count = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo)
+  # Synonym matching
+  elif s2[len2-1] in glob_syn_dict[s1[len1-1]]:
+    count = damerauDistance(sentence1MinusOne, sentence2MinusOne, memo)
   else:
     count4 = float("infinity")
     if ((len1 > 1) and (len2 > 1)):
@@ -138,25 +144,43 @@ def makeSentenceArray(inputFile):
 
 
 def computeDistances(questionFile, answerFile):
+  global glob_syn_dict
   answerArray = splitIntoSentences2(answerFile)
   questionArray = makeSentenceArray(questionFile)
   for question in questionArray:
-      closestAnswer = ""
-      sentenceDistance = float("infinity")
-      memo = dict()
-      for answer in answerArray:
-        answer_edited = cleanAnswer(answer)
-        question_edited = cleanQuestion(question)
+    # Remove punctuations.
+    question_edited = cleanQuestion(question)
 
-        count = damerauDistance(splitSentence(question_edited), splitSentence(answer_edited), memo)
+    # Find synonyms for words in question.
+    question_words = question_edited.split()
+    print question_words
+    for word in question_words:
+      glob_syn_dict[word] = getSynonyms(word)
+    print 'Synonym Dict \n', glob_syn_dict
 
-        if (count < sentenceDistance):
-              closestSentence = answer
-              sentenceDistance = count
-      print "Question sentence: " + question
-      print "Answer sentence: " + closestSentence
-      print "Damerau distance: " + str(sentenceDistance) + "\n"
+    # Compute best answer.
+    closestAnswer = ""
+    sentenceDistance = float("infinity")
+    memo = dict()
+    for answer in answerArray:
+      answer_edited = cleanAnswer(answer)
 
+      count = damerauDistance(splitSentence(question_edited), splitSentence(answer_edited), memo)
+
+      if (count < sentenceDistance):
+            closestSentence = answer
+            sentenceDistance = count
+    print "Question sentence: " + question
+    print "Answer sentence: " + closestSentence
+    print "Damerau distance: " + str(sentenceDistance) + "\n"
+
+    # Reset synonym dict.
+    glob_syn_dict = dict()
 
 if __name__ == '__main__':
+  if len(sys.argv) < 3:
+    print 'Usage: ' + \
+        'python editWordDistance.py <question_file> <answer_file>\n' + \
+    sys.exit(0)
+
   computeDistances(sys.argv[1], sys.argv[2])
