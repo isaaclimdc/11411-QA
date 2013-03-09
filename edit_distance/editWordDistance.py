@@ -1,6 +1,8 @@
 #!/usr/local/bin/python
 
-import sys, string, re
+import logging, os, sys, string, re
+lib_path = os.path.abspath('../helpers')
+sys.path.append(lib_path)
 from nltk_helper import splitIntoSentences2, getSynonyms
 
 INSERTION_COST = 0
@@ -170,17 +172,19 @@ def computeDistances(questionFile, answerFile):
       if (count < sentenceDistance):
             closestSentence = answer
             sentenceDistance = count
-    print "Question sentence: " + question
+    print "\n ------- \n Question sentence: " + question
     print "Answer sentence: " + closestSentence
-    print "Damerau distance: " + str(sentenceDistance) + "\n"
+    print "Damerau distance: " + str(sentenceDistance) + "\n ------- \n"
 
     # Reset synonym dict.
     glob_syn_dict = dict()
 
+# TODO(mburman): use the logging module instead of prints
+# TODO(mburman): let user specify logging level
 if __name__ == '__main__':
   if len(sys.argv) < 3:
     print 'Usage: ' + \
-        'python editWordDistance.py <question_file> <answer_file>\n' + \
+        'python editWordDistance.py <question_file> <answer_file>\n'
     sys.exit(0)
 
   computeDistances(sys.argv[1], sys.argv[2])
