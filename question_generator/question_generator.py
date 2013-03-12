@@ -40,7 +40,6 @@ def makeWhoQuestion(words):
       question_parts[len(question_parts)-1] = prev_word + word
     else:
       question_parts.append(word)
-
   # Last part of sentence is ending punctuation like a period.
   question_parts = question_parts[:len(question_parts)-1]
   last_word = question_parts[len(question_parts)-1]
@@ -100,6 +99,9 @@ if __name__ == '__main__':
   tagged_file.seek(0)
   sentences = tagged_file.readlines()
   tagged_file.close()
+
+  file_name = sys.argv[1]
+  file_path = '../question_generator/' + file_name
 
   questions = makeWhoQuestions(sentences)
 
