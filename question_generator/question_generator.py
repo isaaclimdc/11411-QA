@@ -63,8 +63,10 @@ def makeWhoQuestions(sentences):
 
 # Final pass over a question to remove unnecessary tags.
 def cleanQuestion(question):
-  question.replace('-LRB-', '(')
-  question.replace('-RRB-', ')')
+  # TODO(mburman): a single pass replace might be more efficient.
+  question = question.replace('-LRB- ', '(')
+  question = question.replace(' -RRB-', ')')
+  question = question.replace('--', '-')
   return question
 
 # Check dependencies
@@ -82,24 +84,29 @@ if __name__ == '__main__':
     print 'Usage: ' + \
         'python question_generator.py <file>\n'
     sys.exit(0)
-  checkDependencies()
 
+  checkDependencies()
   file_name = sys.argv[1]
   file_path = '../question_generator/' + file_name
 
-  tagged_file = open('tagged_' + ntpath.basename(file_name), 'w+')
-  # Executes Stanford name entity recognizer
+  # Tag data.
+  if not os.path.exists('tagged'):
+    os.makedirs('tagged')
+  tagged_file = open('tagged/tagged_' + ntpath.basename(file_name), 'w+')
+  # Executes Stanford name entity recognizer.
   subprocess.call(['java', '-cp', '../stanford-ner-2012-11-11/stanford-ner.jar', '-mx600m',
                   'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
                   '../stanford-ner-2012-11-11/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
-
   tagged_file.seek(0)
   sentences = tagged_file.readlines()
   tagged_file.close()
 
   questions = makeWhoQuestions(sentences)
-  # Write questions to a file
-  question_file = open('questions_' + ntpath.basename(file_name), 'w')
+
+  # Write questions to a file.
+  if not os.path.exists('questions'):
+    os.makedirs('questions')
+  question_file = open('questions/questions_' + ntpath.basename(file_name), 'w')
   for question in questions:
     question_file.write(question+'\n')
   question_file.close()
