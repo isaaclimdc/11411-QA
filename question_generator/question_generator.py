@@ -96,17 +96,6 @@ if __name__ == '__main__':
   file_name = sys.argv[1]
   file_path = '../question_generator/' + file_name
 
-  tagged_file = open('tagged_' + file_name, 'w+')
-  # Executes Stanford name entity recognizer
-  subprocess.call(['java', '-cp', '../stanford-ner-2012-11-11/stanford-ner.jar', '-mx600m',
-                  'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
-                  '../stanford-ner-2012-11-11/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
-
-  tagged_file.seek(0)
-  sentences = tagged_file.readlines()
-  tagged_file.close()
-
->>>>>>> b8a8e824dfc6f124fc322ce01735961137f981fe
   questions = makeWhoQuestions(sentences)
   # Write questions to a file
   question_file = open('questions_' + file_name, 'w')
@@ -117,10 +106,6 @@ if __name__ == '__main__':
 # 's at end of name entity is counted as separate word
 # In the Dempsay article there is a typo. It says Dempsay 3rd goal was scored...
 # so our question generator makes the sentence Who 3rd goal was scored
-<<<<<<< HEAD
 # The name entity recognizer marks commas and similar things as separate words 
-=======
-# The name entity recognizer marks commas and similar things as separate words
->>>>>>> b8a8e824dfc6f124fc322ce01735961137f981fe
 # so we need to fix that when we recombine sentences
 # Need to deal with sentences like Bob was born here and he did this. He should be converted.
