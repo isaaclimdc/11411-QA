@@ -7,7 +7,6 @@ from nltk_helper import splitIntoSentences2, getSynonyms
 
 PERSON_TAG = "/PERSON"
 
-
 # Check to see if a word has a given tag
 # (i.e person, place)
 # TODO(sjoyner): We'll probably be able to use this function
@@ -58,11 +57,18 @@ def makeWhoQuestions(sentences):
     words = sentence.split()
     if hasNameEntityTag(words[0], PERSON_TAG):
       question = makeWhoQuestion(words)
+      question = cleanQuestion(question)
       who_questions.append(question)
   return who_questions
 
+# Final pass over a question to remove unnecessary tags.
+def cleanQuestion(question):
+  question.replace('-LRB-', '(')
+  question.replace('-RRB-', ')')
+  return question
+
 # Check dependencies
-def check_dependencies():
+def checkDependencies():
   if os.path.isdir("../stanford-ner-2012-11-11"):
     return
   else:
@@ -76,7 +82,7 @@ if __name__ == '__main__':
     print 'Usage: ' + \
         'python question_generator.py <file>\n'
     sys.exit(0)
-  check_dependencies()
+  checkDependencies()
 
   file_name = sys.argv[1]
   file_path = '../question_generator/' + file_name
