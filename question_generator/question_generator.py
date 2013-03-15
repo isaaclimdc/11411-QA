@@ -6,7 +6,7 @@ sys.path.append(lib_path)
 from nltk_helper import splitIntoSentences2, getSynonyms
 
 PERSON_TAG = "/PERSON"
-
+LOCATION_TAG = "/LOCATION"
 # Check to see if a word has a given tag
 # (i.e person, place)
 # TODO(sjoyner): We'll probably be able to use this function
@@ -31,17 +31,22 @@ def makeWhoQuestion(words):
   question_parts = ['Who']
   i = 0
   # Ignore the name
-  while hasNameEntityTag(words[i], PERSON_TAG):
-    i+=1
-  for j in range(i,len(words)):
+  for i in xrange(0, len(words)):
+    if not hasNameEntityTag(words[i], PERSON_TAG):
+      break
+
+  for j in xrange(i, len(words)):
     word = removeTag(words[j])
     if appendToPreviousWord(word):
       prev_word = question_parts[len(question_parts)-1]
       question_parts[len(question_parts)-1] = prev_word + word
     else:
       question_parts.append(word)
-  # Last part of sentence is ending punctuation like a period.
-  question_parts = question_parts[:len(question_parts)-1]
+
+  # If last token of the sentence is a period, remove it.
+  if question_parts[-1] == ".":
+    question_parts = question_parts[:-1]
+
   last_word = question_parts[len(question_parts)-1]
   question_parts[len(question_parts)-1] = last_word + '?'
   question = ' '.join(question_parts)
@@ -54,10 +59,26 @@ def makeWhoQuestions(sentences):
   for sentence in sentences:
     sentence = sentence.strip()
     words = sentence.split()
+
+    # Truncate sentence after first occurence of "," or ";".
+    # This is usually enough for a question.
+    end = len(words)
+    for i in xrange(0, len(words)):
+      firstChar = words[i][0]
+      if firstChar == ',' or firstChar == ";":
+        end = i
+        break
+    words = words[:end]
+
+    # Reject questions shorter than length 5
+    if len(words) < 5:
+      continue
+
     if hasNameEntityTag(words[0], PERSON_TAG):
       question = makeWhoQuestion(words)
       question = cleanQuestion(question)
       who_questions.append(question)
+
   return who_questions
 
 # Final pass over a question to remove unnecessary tags.
@@ -112,6 +133,7 @@ if __name__ == '__main__':
   for question in questions:
     question_file.write(question+'\n')
   question_file.close()
+
 #TODO(sjoyner): Problems to handle:
 # 's at end of name entity is counted as separate word
 # In the Dempsay article there is a typo. It says Dempsay 3rd goal was scored...
