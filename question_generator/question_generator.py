@@ -7,7 +7,7 @@ def checkDependencies():
   if os.path.isdir("../libraries/stanford-ner"):
     return
   else:
-    print "Dependencies not installed.\nRun ../build_dependencies.sh"
+    print "Dependencies not installed.\nRun cd.. then ./build_dependencies.sh"
     sys.exit(0)
 
 lib_path = os.path.abspath('../libraries')
