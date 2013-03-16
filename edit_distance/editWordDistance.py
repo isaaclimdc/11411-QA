@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 
 import logging, os, sys, string, re
-lib_path = os.path.abspath('../helpers')
+lib_path = os.path.abspath('../libraries')
 sys.path.append(lib_path)
 from nltk_helper import splitIntoSentences2, getSynonyms
 
