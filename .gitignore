@@ -1,2 +1,5 @@
 .DS_Store
 libraries/*
+!libraries/nltk_helper.py
+question_generator/questions/*
+question_generator/tagged/*

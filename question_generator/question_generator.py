@@ -1,10 +1,26 @@
 #!/usr/local/bin/python
 
 import logging, os, sys, string, re, subprocess, ntpath
+
+# Check dependencies
+def checkDependencies():
+  if os.path.isdir("../libraries/stanford-ner"):
+    return
+  else:
+    print "Dependencies not installed.\nRun ../build_dependencies.sh"
+    sys.exit(0)
+
 lib_path = os.path.abspath('../libraries')
 sys.path.append(lib_path)
-import en
+
+try:
+  import en
+except:
+  checkDependencies()
+
 from nltk_helper import splitIntoSentences2, getSynonyms
+
+# Start of code body
 
 PERSON_TAG = "/PERSON"
 LOCATION_TAG = "/LOCATION"
@@ -168,14 +184,6 @@ def cleanQuestion(question):
   question = question.replace('--', '-')
   return question
 
-# Check dependencies
-def checkDependencies():
-  if os.path.isdir("../libraries/stanford-ner-2012-11-11"):
-    return
-  else:
-    print "Dependencies not installed.\nRun ./build_dependencies.sh"
-    sys.exit(0)
-
 # TODO(mburman): use the logging module instead of prints
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
@@ -193,9 +201,9 @@ if __name__ == '__main__':
     os.makedirs('tagged')
   tagged_file = open('tagged/tagged_' + ntpath.basename(file_name), 'w+')
   # Executes Stanford name entity recognizer.
-  subprocess.call(['java', '-cp', '../libraries/stanford-ner-2012-11-11/stanford-ner.jar', '-mx600m',
+  subprocess.call(['java', '-cp', '../libraries/stanford-ner/stanford-ner.jar', '-mx600m',
                   'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
-                  '../libraries/stanford-ner-2012-11-11/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
+                  '../libraries/stanford-ner/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
   tagged_file.seek(0)
   sentences = tagged_file.readlines()
   tagged_file.close()
