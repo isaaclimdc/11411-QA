@@ -9,17 +9,6 @@ def checkDependencies():
   else:
     print "Dependencies not installed.\nRun cd.. then ./build_dependencies.sh"
     sys.exit(0)
-
-lib_path = os.path.abspath('../libraries')
-sys.path.append(lib_path)
-
-try:
-  import en
-except:
-  checkDependencies()
-
-from nltk_helper import splitIntoSentences2, getSynonyms
-
 # Start of code body
 
 PERSON_TAG = "/PERSON"
@@ -169,12 +158,23 @@ def makeWhenQuestions(sentences):
           # Extract second half of sentence
           extracted = words[i+1:]
 
-        question = processWhenQuestion(extracted)        
+        question = processWhenQuestion(extracted)
         when_questions.append(question)
         # print question
 
   return when_questions
 
+
+def importRequired():
+  print "Importing required libraries..."
+  lib_path = os.path.abspath('../libraries')
+  sys.path.append(lib_path)
+  try:
+    import en
+  except:
+    checkDependencies()
+  from nltk_helper import splitIntoSentences2, getSynonyms
+  print "Finished Import"
 
 # Final pass over a question to remove unnecessary tags.
 def cleanQuestion(question):
@@ -192,7 +192,8 @@ if __name__ == '__main__':
         'python question_generator.py <file>\n'
     sys.exit(0)
 
-  checkDependencies()
+  importRequired()
+
   file_name = sys.argv[1]
   file_path = '../question_generator/' + file_name
 
