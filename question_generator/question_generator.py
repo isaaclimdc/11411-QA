@@ -1,6 +1,7 @@
 #!/usr/local/bin/python
 
 import logging, os, sys, string, re, subprocess, ntpath
+from question_ranker import rank
 
 # Check dependencies
 def checkDependencies():
@@ -164,7 +165,6 @@ def makeWhenQuestions(sentences):
 
   return when_questions
 
-
 def importRequired():
   print "Importing required libraries..."
   lib_path = os.path.abspath('../libraries')
@@ -197,6 +197,7 @@ if __name__ == '__main__':
   file_name = sys.argv[1]
   file_path = '../question_generator/' + file_name
 
+  print "Tagging data..."
   # Tag data.
   if not os.path.exists('tagged'):
     os.makedirs('tagged')
@@ -212,8 +213,19 @@ if __name__ == '__main__':
   file_name = sys.argv[1]
   file_path = '../question_generator/' + file_name
 
+  print "Generating Questions..."
   questions = makeWhoQuestions(sentences)
   questions += makeWhenQuestions(sentences)
+
+  print "Ranking questions..."
+  ranked_questions = rank(questions)
+  # Write ranked questions to a file.
+  if not os.path.exists('rank'):
+    os.makedirs('rank')
+  rank_file = open('rank/rank_' + ntpath.basename(file_name), 'w')
+  for ranked_question in ranked_questions:
+    rank_file.write(str(ranked_question[1]) + ' ' + ranked_question[0] +'\n')
+  rank_file.close()
 
   # Write questions to a file.
   if not os.path.exists('questions'):
