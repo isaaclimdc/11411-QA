@@ -60,6 +60,15 @@ def makeWhoQuestions(sentences):
       who_questions.append(question)
   return who_questions
 
+def makeWhereQuestions(sentences):
+  where_questions = []
+  for sentence in sentences:
+    sentence.strip()
+    words = sentence.split()
+    found
+    for word in word:
+
+
 # Check dependencies
 def check_dependencies():
   if os.path.isdir("../stanford-ner-2012-11-11"):
