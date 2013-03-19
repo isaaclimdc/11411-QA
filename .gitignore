@@ -1,1 +1,10 @@
+# Ignore all libraries except nltk_helper.py
+libraries/*
+!libraries/nltk_helper.py
+
+# Ignores results of the question_generator
+question_generator/questions/*
+question_generator/tagged/*
+
+#Misc stuff
 .DS_Store
