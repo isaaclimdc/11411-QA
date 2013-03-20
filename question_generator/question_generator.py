@@ -179,7 +179,7 @@ def makeWhereQuestions(sentences):
     index = -1
     # Some where questions have the format
     # In LOCATION, this event occurred
-    if hasTag(words[0], 'In') and hasTag(words[0], '/IN'):
+    if len(words) > 0 and hasTag(words[0], 'In') and hasTag(words[0], '/IN'):
       foundLocation = False
       foundComma = False
       for i in xrange(len(words)):
