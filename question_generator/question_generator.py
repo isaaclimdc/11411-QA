@@ -13,17 +13,17 @@ def checkDependencies():
 # Start of code body
 
 PERSON_TAG = "/PERSON"
+ORGANIZATION_TAG = "/ORGANIZATION"
 LOCATION_TAG = "/LOCATION"
+VERB_TAG = "/VBD"
 
 # Check to see if a word has a given tag
 # (i.e person, place)
-# TODO(sjoyner): We'll probably be able to use this function
-# for other things beside name entity tagging.
-def hasNameEntityTag(word, tag):
-  return word.endswith(tag)
+def hasTag(word, tag):
+  return (tag in word)
 
 def removeTag(word):
-  tag_index = word.rfind('/')
+  tag_index = word.find('/')
   if tag_index != -1:
     word = word[:tag_index]
   return word
@@ -35,12 +35,23 @@ def appendToPreviousWord(word):
       return True
   return False
 
+def removePeriods(question_parts):
+  # If last token of the sentence is a period, remove it.
+  if question_parts[-1] == ".":
+    question_parts = question_parts[:-1]
+  return question_parts
+
+def appendQuestionMark(question_parts):
+  last_word = question_parts[len(question_parts)-1]
+  question_parts[len(question_parts)-1] = last_word + '?'
+  return question_parts 
+
 def makeWhoQuestion(words):
   question_parts = ['Who']
   i = 0
   # Ignore the name
   for i in xrange(0, len(words)):
-    if not hasNameEntityTag(words[i], PERSON_TAG):
+    if not hasTag(words[i], PERSON_TAG):
       break
 
   for j in xrange(i, len(words)):
@@ -50,15 +61,23 @@ def makeWhoQuestion(words):
       question_parts[len(question_parts)-1] = prev_word + word
     else:
       question_parts.append(word)
-
-  # If last token of the sentence is a period, remove it.
-  if question_parts[-1] == ".":
-    question_parts = question_parts[:-1]
-
-  last_word = question_parts[len(question_parts)-1]
-  question_parts[len(question_parts)-1] = last_word + '?'
+  
+  question_parts = removePeriods(question_parts)
+  question_parts = appendQuestionMark(question_parts)
   question = ' '.join(question_parts)
   return question
+
+# Truncate sentence after first occurence of "," or ";".
+# This is usually enough for a question.  
+def truncateSentence(words):
+  end = len(words)
+  for i in xrange(0, len(words)):
+    firstChar = words[i][0]
+    if firstChar == words[i][0]:
+      end = i
+      break
+    words = words[:end]
+  return words
 
 # Find sentences that we can turn into
 # simple 'who' questions.
@@ -68,26 +87,101 @@ def makeWhoQuestions(sentences):
     sentence = sentence.strip()
     words = sentence.split()
 
-    # Truncate sentence after first occurence of "," or ";".
-    # This is usually enough for a question.
-    end = len(words)
-    for i in xrange(0, len(words)):
-      firstChar = words[i][0]
-      if firstChar == ',' or firstChar == ';':
-        end = i
-        break
-    words = words[:end]
+    words = truncateSentence(words)
 
     # Reject questions shorter than length 5
     if len(words) < 5:
       continue
 
-    if hasNameEntityTag(words[0], PERSON_TAG):
+    if hasTag(words[0], PERSON_TAG):
       question = makeWhoQuestion(words)
       question = cleanQuestion(question)
       who_questions.append(question)
 
   return who_questions
+
+def hasRootWord(word, root_word):
+  start_index = word.find('/')
+  end_index = word.find(VERB_TAG)
+
+  actual_root_word = word[start_index : end_index]
+  return actual_root_word == root_word
+
+def fixTense(word):
+  slash_index = word.find('/')
+  start_index = slash_index + 1
+  end_index = word.find(VERB_TAG)
+
+  correct_tense = word[start_index : end_index]
+  word = correct_tense + word[slash_index : ]
+  return word
+
+def makeWhereDidQuestion(words, start_index, end_index):
+  question_parts = ['Where', 'did']
+  foundVerb = False
+  for i in xrange(start_index, end_index):
+    if hasTag(words[i], VERB_TAG) and not foundVerb:
+      words[i] = fixTense(words[i])
+      foundVerb = True
+    word = removeTag(words[i])
+    if appendToPreviousWord(word):
+      prev_word = question_parts[len(question_parts)-1]
+      question_parts[len(question_parts)-1] = prev_word + word
+    else:
+      question_parts.append(word)
+  
+  question_parts = removePeriods(question_parts)
+  question_parts = appendQuestionMark(question_parts)
+  question = ' '.join(question_parts)
+  return question
+
+def containsSpecialCase(words, key_phrase):
+  key_phrase_index = 0
+  found_index = -1
+  for i in xrange(len(words)):
+    if hasRootWord(words[i], key_phrase[key_phrase_index]):
+      if key_phrase_index == 0:
+        found_index = i
+      key_phrase_index += 1
+    else:
+      if (key_phrase_index > 0) and (not key_phrase_index == len(key_phrase)):
+        found_index = -1
+  return found_index
+
+def makeWhereQuestions(sentences):
+  where_questions = []
+  for sentence in sentences:
+    sentence = sentence.strip()
+    words = sentence.split()
+
+    words = truncateSentence(words)
+    index = -1
+    # Some where questions have the format
+    # In LOCATION, this event occurred
+    if hasTag(words[0], 'In') and hasTag(words[0], '/IN'):
+      foundLocation = False
+      foundComma = False
+      for i in xrange(len(words)):
+        if hasTag(words[i], LOCATION_TAG) or hasTag(words[i], ORGANIZATION_TAG):
+          foundLocation = True
+        # Found a potential question
+        elif hasTag(words[i], ','):
+          if foundLocation:
+            foundComma = True
+        elif hasTag(words[i], PERSON_TAG) or hasTag(words[i], ORGANIZATION_TAG):
+          if foundComma:
+            index = i
+            break
+    if index != -1:
+      question = makeWhereDidQuestion(words, index, len(words))
+      question = cleanQuestion(question)
+      where_questions.append(question)
+    # Special case time!
+    else:
+      index = containsSpecialCase(words, ['grow', 'up'])
+      if index != -1:
+        question = makeWhereDidQuestion
+  return where_questions
 
 # Does the dirty work to transform a raw sentence containing
 # a date reference to a "when" question.
@@ -189,33 +283,32 @@ def cleanQuestion(question):
 if __name__ == '__main__':
   if len(sys.argv) < 2:
     print 'Usage: ' + \
-        'python question_generator.py <file>\n'
+        'python question_generator.py <tagged_file>\n'
     sys.exit(0)
 
   importRequired()
 
   file_name = sys.argv[1]
-  file_path = '../question_generator/' + file_name
+  #file_path = '../question_generator/' + file_name
+  tagged_file = open(file_name, 'r')
 
-  print "Tagging data..."
+  #print "Tagging data..."
   # Tag data.
-  if not os.path.exists('tagged'):
-    os.makedirs('tagged')
-  tagged_file = open('tagged/tagged_' + ntpath.basename(file_name), 'w+')
+  #if not os.path.exists('tagged'):
+  #  os.makedirs('tagged')
+  #tagged_file = open('tagged/tagged_' + ntpath.basename(file_name), 'w+')
   # Executes Stanford name entity recognizer.
-  subprocess.call(['java', '-cp', '../libraries/stanford-ner/stanford-ner.jar', '-mx600m',
-                  'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
-                  '../libraries/stanford-ner/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
-  tagged_file.seek(0)
+  #subprocess.call(['java', '-cp', '../libraries/stanford-ner/stanford-ner.jar', '-mx600m',
+  #                'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
+   #               '../libraries/stanford-ner/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
+  #tagged_file.seek(0)
   sentences = tagged_file.readlines()
   tagged_file.close()
-
-  file_name = sys.argv[1]
-  file_path = '../question_generator/' + file_name
 
   print "Generating Questions..."
   questions = makeWhoQuestions(sentences)
   questions += makeWhenQuestions(sentences)
+  questions += makeWhereQuestions(sentences)
 
   print "Ranking questions..."
   ranked_questions = rank(questions)
