@@ -5,6 +5,8 @@ libraries/*
 # Ignores results of the question_generator
 question_generator/questions/*
 question_generator/tagged/*
+question_generator/rank/*
 
 #Misc stuff
 .DS_Store
+*.pyc
