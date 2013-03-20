@@ -4,32 +4,46 @@ POSITION = 'POS'
 NAMED_ENTITY = 'NER'
 ROOT = 'lemma'
 
-def parseWord(xml_file, tag_type):
+def hasTag(line, tag_types):
+  for tag_type in tag_types:
+    start_tag = '<' + tag_type + '>'
+    if start_tag in line:
+      return True
+  return False
+
+def getTag(line, tag_types):
+  for tag_type in tag_types:
+    start_tag = '<' + tag_type + '>'
+    end_tag = '</' + tag_type + '>'
+    if start_tag in line:
+      start_index = string.find(line, start_tag) + len(start_tag)
+      end_index = string.find(line, end_tag)
+      tag = line[start_index : end_index]
+  return '/' + tag
+
+def parseWord(xml_file, tag_types):
   line = xml_file.readline()
   word_tag = '<word>'
-  start_tag = '<' + tag_type + '>'
-  end_tag = '</' + tag_type + '>'
+  tag = ''
   while line != '':
     if word_tag in line:
       start_index = string.find(line, word_tag) + len(word_tag)
       end_index = string.find(line, '</word>')
       word = line[start_index : end_index]
-    elif start_tag in line:
-      start_index = string.find(line, start_tag) + len(start_tag)
-      end_index = string.find(line, end_tag)
-      tag = line[start_index : end_index]
+    elif hasTag(line, tag_types):
+      tag += getTag(line, tag_types)
     elif '</token>' in line:
       break
     line = xml_file.readline()
-  tagged_word = word + '\\' + tag
+  tagged_word = word + tag
   return tagged_word
 
-def parseSentence(xml_file, tag_type):
+def parseSentence(xml_file, tag_types):
   line = xml_file.readline()
   words = []
   while line != '':
     if '<token id' in line:
-      word = parseWord(xml_file, tag_type)
+      word = parseWord(xml_file, tag_types)
       words.append(word)
     elif '</sentence>' in line:
       break
@@ -37,15 +51,15 @@ def parseSentence(xml_file, tag_type):
   tagged_sentence = ' '.join(words)
   return tagged_sentence
 
-def parseXMLFile(xml_file, parse_type):
+def parseXMLFile(xml_file, tag_types):
   line = xml_file.readline()
   sentences = []
   while line != '':
     if '<sentence id' in line:
-      sentence = parseSentence(xml_file, parse_type)
+      sentence = parseSentence(xml_file, tag_types)
       sentences.append(sentence)
     line = xml_file.readline()
-  tagged_sentences = ' '.join(sentences)
+  tagged_sentences = '\n'.join(sentences)
   return tagged_sentences
 
 def getXMLFileLocation(file_name):
@@ -55,19 +69,23 @@ def getXMLFileLocation(file_name):
   return xml_file
 
 if __name__ == '__main__':
-  if len(sys.argv) < 3:
+  if len(sys.argv) < 4:
     print 'Usage: ' + \
-        'python stanford_nlp_helper.py <file> <parse_type>\n'
+        'python stanford_nlp_helper.py <file> <output> <tag_type>\n'
     sys.exit(0)
 
   file_name = sys.argv[1]
-  parse_type = sys.argv[2]
+  output_name = sys.argv[2]
+  tag_types = sys.argv[3:]
 
   subprocess.call(['java', '-cp', 
-    'stanford-corenlp-1.3.4.jar:stanford-corenlp-1.3.4-models.jar:xom.jar:joda-time.jar:jollyday.jar', '-Xmx3g', 'edu.stanford.nlp.pipeline.StanfordCoreNLP', '-annotators' 'tokenize,ssplit,pos,lemma,ner,parse,dcoref', '-file', file_name, '-outputDirectory', '../../question_generator'])
+    'stanford-corenlp-1.3.4.jar:stanford-corenlp-1.3.4-models.jar:xom.jar:joda-time.jar:jollyday.jar', '-Xmx3g', 'edu.stanford.nlp.pipeline.StanfordCoreNLP', '-annotators' 'tokenize,ssplit,pos,lemma,ner', '-file', file_name, '-outputDirectory', '../../question_generator'])
 
   xml_file = getXMLFileLocation(file_name)
 
   xml_file = open(xml_file, 'r')
-  tagged_sentences = parseXMLFile(xml_file, parse_type)
-  print 'tagged ', tagged_sentences 
+  tagged_sentences = parseXMLFile(xml_file, tag_types)
+  
+  output_file = open(output_name, 'w+')
+  output_file.write(tagged_sentences)
+  output_file.close()

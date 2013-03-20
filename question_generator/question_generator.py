@@ -15,7 +15,8 @@ def checkDependencies():
 PERSON_TAG = "/PERSON"
 ORGANIZATION_TAG = "/ORGANIZATION"
 LOCATION_TAG = "/LOCATION"
-VERB_TAG = "/VBD"
+VERB_TAG_1 = "/VBD"
+VERB_TAG_2 = "/VBG"
 
 # Check to see if a word has a given tag
 # (i.e person, place)
@@ -45,16 +46,18 @@ def appendQuestionMark(question_parts):
   last_word = question_parts[len(question_parts)-1]
   question_parts[len(question_parts)-1] = last_word + '?'
   return question_parts 
-
-def makeWhoQuestion(words):
-  question_parts = ['Who']
+  
+def makeWhoQuestion(words, question_parts):
   i = 0
   # Ignore the name
   for i in xrange(0, len(words)):
     if not hasTag(words[i], PERSON_TAG):
       break
-
+  found_verb = False
   for j in xrange(i, len(words)):
+    if (hasTag(words[j], VERB_TAG_1) or hasTag(words[j], VERB_TAG_2)) and not found_verb:
+      words[j] = fixTense(words[j])
+      found_verb = True
     word = removeTag(words[j])
     if appendToPreviousWord(word):
       prev_word = question_parts[len(question_parts)-1]
@@ -94,15 +97,33 @@ def makeWhoQuestions(sentences):
       continue
 
     if hasTag(words[0], PERSON_TAG):
-      question = makeWhoQuestion(words)
+      question = makeWhoQuestion(words, ['Who'])
       question = cleanQuestion(question)
       who_questions.append(question)
-
+    else:
+      against_question = False
+      comma_found = False
+      for i in xrange(len(words)):
+        if hasTag(words[i], '/IN') and hasTag(words[i], '/against'):
+          against_question = True
+        elif hasTag(words[i], '/,') and against_question:
+          question_words = words[i + 1 : ]
+          # TODO(sjoyner): We need to figure out what this word refers to as this is
+          # what the question is about
+          if hasTag(question_words[0], '/PRP'):
+            question_words = question_words[1 : ]
+          question = makeWhoQuestion(question_words, ['Against', 'who', 'did', 'THING'])
+          question = cleanQuestion(question)
+          print question
+          print
+          who_questions.append(question)
+          break
   return who_questions
 
 def hasRootWord(word, root_word):
-  start_index = word.find('/')
-  end_index = word.find(VERB_TAG)
+  slash_index = word.find('/')
+  start_index = slash_index + 1
+  end_index = word.find('/', start_index)
 
   actual_root_word = word[start_index : end_index]
   return actual_root_word == root_word
@@ -110,7 +131,7 @@ def hasRootWord(word, root_word):
 def fixTense(word):
   slash_index = word.find('/')
   start_index = slash_index + 1
-  end_index = word.find(VERB_TAG)
+  end_index = word.find('/', start_index)
 
   correct_tense = word[start_index : end_index]
   word = correct_tense + word[slash_index : ]
@@ -118,9 +139,9 @@ def fixTense(word):
 
 def makeWhereDidQuestion(words, start_index, end_index):
   question_parts = ['Where', 'did']
-  foundVerb = False
+  found_verb = False
   for i in xrange(start_index, end_index):
-    if hasTag(words[i], VERB_TAG) and not foundVerb:
+    if (hasTag(words[i], VERB_TAG_1) or hasTag(words[i], VERB_TAG_2)) and not found_verb:
       words[i] = fixTense(words[i])
       foundVerb = True
     word = removeTag(words[i])
@@ -177,10 +198,10 @@ def makeWhereQuestions(sentences):
       question = cleanQuestion(question)
       where_questions.append(question)
     # Special case time!
-    else:
-      index = containsSpecialCase(words, ['grow', 'up'])
-      if index != -1:
-        question = makeWhereDidQuestion
+#    else:
+ #     index = containsSpecialCase(words, ['grow', 'up'])
+  #    if index != -1:
+   #     question = makeWhereDidQuestion
   return where_questions
 
 # Does the dirty work to transform a raw sentence containing
