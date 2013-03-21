@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 import string, sys, subprocess
 
 POSITION = 'POS'
@@ -69,7 +71,7 @@ def getXMLFileLocation(file_name):
 if __name__ == '__main__':
   if len(sys.argv) < 4:
     print 'Usage: ' + \
-        'python stanford_nlp_helper.py <file> <output> <tag_type>\n'
+        './stanford_helper.py <file> <output> <tag_type>\n'
     sys.exit(0)
 
   file_name = sys.argv[1]
