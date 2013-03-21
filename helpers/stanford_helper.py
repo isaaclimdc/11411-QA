@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 
-import string, sys, subprocess
+import string, sys, subprocess, ntpath
 
 POSITION = 'POS'
 NAMED_ENTITY = 'NER'
@@ -64,40 +64,49 @@ def parseXMLFile(xml_file, tag_types):
   tagged_sentences = '\n'.join(sentences)
   return tagged_sentences
 
-def getXMLFileLocation(file_name):
-  start = len(file_name)
-  for i in range(len(file_name)-1, -1, -1):
-    if file_name[i] == '/':
-      start = i+1
-      break
-  file_name = file_name[start:]
+def getFileName(file_path, trunc_ext):
+  file_path = ntpath.basename(file_path)
+  
+  if trunc_ext:
+    return file_path[:-4]
+  else:
+    return file_path
 
-  xml_file = '../helpers/tmp/' + file_name + '.xml'
-  return xml_file
+def getXMLFilePath(file_path):
+  file_name = getFileName(file_path, False)
+  xml_path = '../helpers/tmp/' + file_name + '.xml'
+  return xml_path
+
+def getOutputFilePath(output_dir, input_path):
+  file_name = getFileName(input_path, True)
+  output_path = output_dir + file_name + '.tag'
+  return output_path
 
 if __name__ == '__main__':
   if len(sys.argv) < 4:
     print 'Usage: ' + \
-        './stanford_helper.py <file> <output> <tag_type>\n'
+        './stanford_helper.py <input file> <output dir> <tag type>\n'
     sys.exit(0)
 
-  file_name = sys.argv[1]
-  file_path_rel = '../../test_data/' + file_name
-  output_name = sys.argv[2]
+  input_path = sys.argv[1]
+  input_path_rel = '../../test_data/' + input_path
+  output_dir = sys.argv[2]
   tag_types = sys.argv[3:]
-
-#  subprocess.call(['java', '-cp', 
- #   'stanford-corenlp-1.3.4.jar:stanford-corenlp-1.3.4-models.jar:xom.jar:joda-time.jar:jollyday.jar', '-Xmx3g', 'edu.stanford.nlp.pipeline.StanfordCoreNLP', '-annotators' 'tokenize,ssplit,pos,lemma,ner', '-file', file_name, '-outputDirectory', '../../question_generator'])
   
-  subprocess.Popen(['./parse_text.sh', file_path_rel]).wait()
+  # Execute the shell script to run StanfordCoreNLP, and wait for
+  # it to complete.
+  subprocess.check_call(['./parse_text.sh', input_path_rel])
 
-  xml_file = getXMLFileLocation(file_name)
-  
+  # Generate a temp xml file. For the input X.txt, generate X.txt.xml
+  xml_file = getXMLFilePath(input_path)
   xml_file = open(xml_file, 'r')
   tagged_sentences = parseXMLFile(xml_file, tag_types)
 
-  output_file = open(output_name, 'w+')
+  # For the input file X.txt, generate X.tags
+  output_path = getOutputFilePath(output_dir, input_path)
+  output_file = open(output_path, 'w+')
   output_file.write(tagged_sentences)
   output_file.close()
 
-  # subprocess.Popen(['./cleanup.sh']).wait()
+  # Clean up
+  subprocess.check_call(['./cleanup.sh'])

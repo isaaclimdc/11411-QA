@@ -2,10 +2,13 @@
 ========
 
 
-Execute
+Ask
 --------
-- Ask: `./ask.py article.txt 10`
-- Answer: `./answer.py article.txt questions.txt`
+`./ask.py article.txt 10`
+
+Answer
+--------
+`./answer.py article.txt questions.txt`
 
 Team "sudo rm -rf /"
 --------

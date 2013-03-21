@@ -74,13 +74,11 @@ def appendQuestionMark(question_parts):
 # Truncate sentence after first occurence of "," or ";".
 # This is usually enough for a question.  
 def truncateSentence(words):
-  end = len(words)
   for i in xrange(0, len(words)):
     firstChar = words[i][0]
-    if firstChar == words[i][0]:
-      end = i
-      break
-    words = words[:end]
+    if firstChar == ',' or firstChar == ';':
+      return words[:i]
+
   return words
 
 def hasRootWord(word, root_word):
@@ -322,20 +320,27 @@ def makeWhenQuestions(sentences):
 ###### Procedural ######
 ########################
 
-def tagData(file_name):
-  #subprocess.call(['./parse_text.sh', file_path])
-
-  # Tag data.
+def tagData(file_path):
+  # To use preprocessed tag file, just give ask a .tag file:
+  #     ./ask.py tagged/clint_dempsey_ans.tag
+  # To tag then process (slow!), just give ask a .txt file:
+  #     ./ask.py ../test_data/clint_dempsey_ans.txt
+  
+  if file_path[-4:] == ".tag":
+    # Preprocessed tag file
+    tagged_file_path = file_path
+  else:
+    # Raw text file. Must tag it first (slow!)
+    subprocess.check_call(['./tag_data.sh', file_path, \
+      "../ask/tagged/", "NER"])
+    tagged_file_name = ntpath.basename(file_path)
+    tagged_file_path = "tagged/" + tagged_file_name[:-4] + ".tag"
+  
+  # Process the tagged data
   if not os.path.exists('tagged'):
     os.makedirs('tagged')
-  tagged_file = open('tagged/tagged_' + ntpath.basename(file_name), 'w+')
 
-  # Executes Stanford NER.
-  # subprocess.call(['java', '-cp', '../libraries/stanford-ner/stanford-ner.jar', '-mx600m',
-  #                 'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
-  #                 '../libraries/stanford-ner/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
-
-  tagged_file.seek(0)
+  tagged_file = open(tagged_file_path, 'r')
   sentences = tagged_file.readlines()
   tagged_file.close()
 
@@ -358,12 +363,12 @@ def generateQuestions(sentences):
 
   return questions
 
-def rankQuestions(questions, file_name):
+def rankQuestions(questions, file_path):
   ranked_questions = rank(questions)
   # Write ranked questions to a file.
   if not os.path.exists('rank'):
     os.makedirs('rank')
-  rank_file = open('rank/rank_' + ntpath.basename(file_name), 'w')
+  rank_file = open('rank/rank_' + ntpath.basename(file_path), 'w')
   for ranked_question in ranked_questions:
     rank_file.write(str(ranked_question[1]) + ' ' + ranked_question[0] +'\n')
   rank_file.close()
@@ -371,10 +376,11 @@ def rankQuestions(questions, file_name):
   return ranked_questions
 
 # Write questions to file.
-def writeQuestions():
+def writeQuestions(questions, file_path):
   if not os.path.exists('questions'):
     os.makedirs('questions')
-  question_file = open('questions/questions_' + ntpath.basename(file_name), 'w')
+  file_name = ntpath.basename(file_path)[:-3] + "txt"
+  question_file = open('questions/questions_' + file_name, 'w')
   for question in questions:
     question_file.write(question+'\n')
   question_file.close()
@@ -382,23 +388,23 @@ def writeQuestions():
 # TODO(mburman): use the logging module instead of prints
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
-  file_name = sys.argv[1]
+  file_path = sys.argv[1]
 
   print "~ Tagging data..."
-  sentences = tagData(file_name)
-  print "DONE!\n"
+  sentences = tagData(file_path)
+  print "~ DONE!\n"
 
   print "~ Generating Questions..."
   questions = generateQuestions(sentences)
-  print "DONE!\n"
+  print "~ DONE!\n"
 
   print "~ Ranking questions..."
-  ranked_questions = rankQuestions(questions, file_name)
-  print "DONE!\n"
+  ranked_questions = rankQuestions(questions, file_path)
+  print "~ DONE!\n"
 
   print "~ Writing questions to file..."
-  writeQuestions()
-  print "DONE!\n"
+  writeQuestions(questions, file_path)
+  print "~ DONE!\n"
 
   #END
 
