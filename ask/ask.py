@@ -323,9 +323,6 @@ def makeWhenQuestions(sentences):
 ########################
 
 def tagData(file_name):
-  file_path = file_name
-  tagged_file = open(file_name, 'r')
-  file_path = '../../question_generator' + file_name
   #subprocess.call(['./parse_text.sh', file_path])
 
   # Tag data.
@@ -334,9 +331,9 @@ def tagData(file_name):
   tagged_file = open('tagged/tagged_' + ntpath.basename(file_name), 'w+')
 
   # Executes Stanford NER.
-  subprocess.call(['java', '-cp', '../libraries/stanford-ner/stanford-ner.jar', '-mx600m',
-                  'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
-                  '../libraries/stanford-ner/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
+  # subprocess.call(['java', '-cp', '../libraries/stanford-ner/stanford-ner.jar', '-mx600m',
+  #                 'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
+  #                 '../libraries/stanford-ner/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
 
   tagged_file.seek(0)
   sentences = tagged_file.readlines()
