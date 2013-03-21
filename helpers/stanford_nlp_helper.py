@@ -63,13 +63,7 @@ def parseXMLFile(xml_file, tag_types):
   return tagged_sentences
 
 def getXMLFileLocation(file_name):
-<<<<<<< HEAD:helpers/stanford_nlp_helper.py
   xml_file = file_name + '.xml'
-=======
-  index = file_name.rfind('/')
-  name = file_name[index + 1 : ]
-  xml_file = name + '.xml'
->>>>>>> REORGANIZED ALL FILES:ask/stanford_nlp_helper.py
   return xml_file
 
 if __name__ == '__main__':
@@ -82,21 +76,16 @@ if __name__ == '__main__':
   output_name = sys.argv[2]
   tag_types = sys.argv[3:]
 
-<<<<<<< HEAD:helpers/stanford_nlp_helper.py
 #  subprocess.call(['java', '-cp', 
  #   'stanford-corenlp-1.3.4.jar:stanford-corenlp-1.3.4-models.jar:xom.jar:joda-time.jar:jollyday.jar', '-Xmx3g', 'edu.stanford.nlp.pipeline.StanfordCoreNLP', '-annotators' 'tokenize,ssplit,pos,lemma,ner', '-file', file_name, '-outputDirectory', '../../question_generator'])
   print file_name 
   subprocess.Popen(['./parse_text.sh', file_name]).wait()
-=======
-  subprocess.call(['java', '-cp', 
-    '../libraries/stanford-corenlp/stanford-corenlp-1.3.4.jar:stanford-corenlp-1.3.4-models.jar:xom.jar:joda-time.jar:jollyday.jar', '-Xmx3g', 'edu.stanford.nlp.pipeline.StanfordCoreNLP', '-annotators' 'tokenize,ssplit,pos,lemma,ner', '-file', file_name, '-outputDirectory', ''])
->>>>>>> REORGANIZED ALL FILES:ask/stanford_nlp_helper.py
 
   xml_file = getXMLFileLocation(file_name)
 
-  xml_file = open(xml_file, 'rw+')
+  xml_file = open(xml_file, 'r')
   tagged_sentences = parseXMLFile(xml_file, tag_types)
   
-  output_file = open(output_name, 'rw+')
+  output_file = open(output_name, 'w+')
   output_file.write(tagged_sentences)
   output_file.close()
