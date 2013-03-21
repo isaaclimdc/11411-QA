@@ -65,7 +65,7 @@ def parseXMLFile(xml_file, tag_types):
   return tagged_sentences
 
 def getXMLFileLocation(file_name):
-  xml_file = file_name + '.xml'
+  xml_file = '../ask/' + file_name + '.xml'
   return xml_file
 
 if __name__ == '__main__':
@@ -75,13 +75,14 @@ if __name__ == '__main__':
     sys.exit(0)
 
   file_name = sys.argv[1]
+  file_path_stanford = '../../helpers/' + file_name
   output_name = sys.argv[2]
   tag_types = sys.argv[3:]
 
 #  subprocess.call(['java', '-cp', 
  #   'stanford-corenlp-1.3.4.jar:stanford-corenlp-1.3.4-models.jar:xom.jar:joda-time.jar:jollyday.jar', '-Xmx3g', 'edu.stanford.nlp.pipeline.StanfordCoreNLP', '-annotators' 'tokenize,ssplit,pos,lemma,ner', '-file', file_name, '-outputDirectory', '../../question_generator'])
   print file_name 
-  subprocess.Popen(['./parse_text.sh', file_name]).wait()
+  subprocess.Popen(['./parse_text.sh', file_path_stanford]).wait()
 
   xml_file = getXMLFileLocation(file_name)
 
