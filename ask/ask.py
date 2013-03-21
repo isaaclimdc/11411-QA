@@ -1,22 +1,46 @@
 #!/usr/local/bin/python
 
 import logging, os, sys, string, re, subprocess, ntpath
-from question_ranker import rank
+from qranker import rank
 
 # Check dependencies
 def checkDependencies():
-  if os.path.isdir("../libraries/stanford-ner"):
+  if os.path.isdir("../libraries/en") and \
+     os.path.isdir("../libraries/stanford-corenlp"):
     return
   else:
     print "Dependencies not installed.\nRun cd.. then ./build_dependencies.sh"
     sys.exit(0)
-# Start of code body
+
+if len(sys.argv) < 2:
+  print 'Usage: ./ask.py <article_file>\n'
+  sys.exit(0)
+
+print "~ Importing required libraries..."
+checkDependencies()
+lib_path = os.path.abspath('../libraries')
+sys.path.append(lib_path)
+
+from nltk_helper import splitIntoSentences2, getSynonyms
+import en
+print "DONE!\n"
+
+
+#######################
+###### Constants ######
+#######################
 
 PERSON_TAG = "/PERSON"
 ORGANIZATION_TAG = "/ORGANIZATION"
 LOCATION_TAG = "/LOCATION"
 VERB_TAG_1 = "/VBD"
 VERB_TAG_2 = "/VBG"
+
+
+
+##############################
+###### Helper functions ######
+##############################
 
 # Check to see if a word has a given tag
 # (i.e person, place)
@@ -43,10 +67,47 @@ def removePeriods(question_parts):
   return question_parts
 
 def appendQuestionMark(question_parts):
-  last_word = question_parts[len(question_parts)-1]
-  question_parts[len(question_parts)-1] = last_word + '?'
+  last_word = question_parts[-1]
+  question_parts[-1] = last_word + '?'
   return question_parts 
-  
+
+# Truncate sentence after first occurence of "," or ";".
+# This is usually enough for a question.  
+def truncateSentence(words):
+  end = len(words)
+  for i in xrange(0, len(words)):
+    firstChar = words[i][0]
+    if firstChar == words[i][0]:
+      end = i
+      break
+    words = words[:end]
+  return words
+
+def hasRootWord(word, root_word):
+  slash_index = word.find('/')
+  start_index = slash_index + 1
+  end_index = word.find('/', start_index)
+
+  actual_root_word = word[start_index : end_index]
+  return actual_root_word == root_word
+
+def fixTense(word):
+  slash_index = word.find('/')
+  start_index = slash_index + 1
+  end_index = word.find('/', start_index)
+
+  correct_tense = word[start_index : end_index]
+  word = correct_tense + word[slash_index : ]
+  return word
+
+
+
+#############################
+###### "Who" questions ######
+#############################
+
+
+
 def makeWhoQuestion(words, question_parts):
   i = 0
   # Ignore the name
@@ -69,18 +130,6 @@ def makeWhoQuestion(words, question_parts):
   question_parts = appendQuestionMark(question_parts)
   question = ' '.join(question_parts)
   return question
-
-# Truncate sentence after first occurence of "," or ";".
-# This is usually enough for a question.  
-def truncateSentence(words):
-  end = len(words)
-  for i in xrange(0, len(words)):
-    firstChar = words[i][0]
-    if firstChar == words[i][0]:
-      end = i
-      break
-    words = words[:end]
-  return words
 
 # Find sentences that we can turn into
 # simple 'who' questions.
@@ -120,22 +169,11 @@ def makeWhoQuestions(sentences):
           break
   return who_questions
 
-def hasRootWord(word, root_word):
-  slash_index = word.find('/')
-  start_index = slash_index + 1
-  end_index = word.find('/', start_index)
 
-  actual_root_word = word[start_index : end_index]
-  return actual_root_word == root_word
 
-def fixTense(word):
-  slash_index = word.find('/')
-  start_index = slash_index + 1
-  end_index = word.find('/', start_index)
-
-  correct_tense = word[start_index : end_index]
-  word = correct_tense + word[slash_index : ]
-  return word
+###############################
+###### "Where" questions ######
+###############################
 
 def makeWhereDidQuestion(words, start_index, end_index):
   question_parts = ['Where', 'did']
@@ -146,8 +184,8 @@ def makeWhereDidQuestion(words, start_index, end_index):
       foundVerb = True
     word = removeTag(words[i])
     if appendToPreviousWord(word):
-      prev_word = question_parts[len(question_parts)-1]
-      question_parts[len(question_parts)-1] = prev_word + word
+      prev_word = question_parts[-1]
+      question_parts[-1] = prev_word + word
     else:
       question_parts.append(word)
   
@@ -204,22 +242,28 @@ def makeWhereQuestions(sentences):
    #     question = makeWhereDidQuestion
   return where_questions
 
+
+
+##############################
+###### "When" questions ######
+##############################
+
+# Remove extra words/symbols, RECURSIVELY :(
+def recClean(parts):
+  firstWord = parts[0]
+  lastWord = parts[-1]
+  if firstWord == "on" or firstWord == "." or \
+     firstWord == "," or firstWord.isdigit():
+    return recClean(parts[1:])
+  if lastWord == "on" or lastWord == "." or \
+     lastWord == "," or lastWord.isdigit():
+    return recClean(parts[:-1])
+
+  return parts
+
 # Does the dirty work to transform a raw sentence containing
 # a date reference to a "when" question.
 def processWhenQuestion(question_parts):
-  # Remove extra words/symbols, RECURSIVELY :(
-  def recClean(parts):
-    firstWord = parts[0]
-    lastWord = parts[-1]
-    if firstWord == "on" or firstWord == "." or \
-       firstWord == "," or firstWord.isdigit():
-      return recClean(parts[1:])
-    if lastWord == "on" or lastWord == "." or \
-       lastWord == "," or lastWord.isdigit():
-      return recClean(parts[:-1])
-
-    return parts
-
   question_parts = recClean(question_parts)
 
   # Convert the subject verb to present tense using NodeBox
@@ -230,19 +274,12 @@ def processWhenQuestion(question_parts):
   except:
     pass
 
-  # Truncate sentence after first occurence of "," or ";".
-  # This is usually enough for a question.
-  end = len(question_parts)
-  for i in xrange(0, len(question_parts)):
-    firstChar = question_parts[i][0]
-    if firstChar == ',' or firstChar == ';':
-      end = i
-      break
-  question_parts = question_parts[:end]
+  question_parts = truncateSentence(question_parts)
 
   # Join everything together.
   question_parts = ["When", "did"] + question_parts
-  question = " ".join(question_parts) + "?"
+  question_parts = appendQuestionMark(question_parts)
+  question = " ".join(question_parts)
   question = cleanQuestion(question)
 
   return question
@@ -276,20 +313,34 @@ def makeWhenQuestions(sentences):
 
         question = processWhenQuestion(extracted)
         when_questions.append(question)
-        # print question
 
   return when_questions
 
-def importRequired():
-  print "Importing required libraries..."
-  lib_path = os.path.abspath('../libraries')
-  sys.path.append(lib_path)
-  try:
-    import en
-  except:
-    checkDependencies()
-  from nltk_helper import splitIntoSentences2, getSynonyms
-  print "Finished Import"
+
+
+########################
+###### Procedural ######
+########################
+
+def tagData(file_name):
+  file_path = file_name
+  tagged_file = open(file_name, 'r')
+
+  # Tag data.
+  if not os.path.exists('tagged'):
+    os.makedirs('tagged')
+  tagged_file = open('tagged/tagged_' + ntpath.basename(file_name), 'w+')
+
+  # Executes Stanford NER.
+  subprocess.call(['java', '-cp', '../libraries/stanford-ner/stanford-ner.jar', '-mx600m',
+                  'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
+                  '../libraries/stanford-ner/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
+
+  tagged_file.seek(0)
+  sentences = tagged_file.readlines()
+  tagged_file.close()
+
+  return sentences
 
 # Final pass over a question to remove unnecessary tags.
 def cleanQuestion(question):
@@ -297,41 +348,18 @@ def cleanQuestion(question):
   question = question.replace('-LRB- ', '(')
   question = question.replace(' -RRB-', ')')
   question = question.replace('--', '-')
+
   return question
 
-# TODO(mburman): use the logging module instead of prints
-# TODO(mburman): let user specify logging level
-if __name__ == '__main__':
-  if len(sys.argv) < 2:
-    print 'Usage: ' + \
-        'python question_generator.py <tagged_file>\n'
-    sys.exit(0)
-
-  importRequired()
-
-  file_name = sys.argv[1]
-  #file_path = '../question_generator/' + file_name
-  tagged_file = open(file_name, 'r')
-
-  #print "Tagging data..."
-  # Tag data.
-  #if not os.path.exists('tagged'):
-  #  os.makedirs('tagged')
-  #tagged_file = open('tagged/tagged_' + ntpath.basename(file_name), 'w+')
-  # Executes Stanford name entity recognizer.
-  #subprocess.call(['java', '-cp', '../libraries/stanford-ner/stanford-ner.jar', '-mx600m',
-  #                'edu.stanford.nlp.ie.crf.CRFClassifier', '-loadClassifier',
-   #               '../libraries/stanford-ner/classifiers/english.all.3class.distsim.crf.ser.gz', '-textFile', file_path], stdout=tagged_file)
-  #tagged_file.seek(0)
-  sentences = tagged_file.readlines()
-  tagged_file.close()
-
-  print "Generating Questions..."
-  questions = makeWhoQuestions(sentences)
+def generateQuestions(sentences):
+  questions = []
+  questions += makeWhoQuestions(sentences)
   questions += makeWhenQuestions(sentences)
   questions += makeWhereQuestions(sentences)
 
-  print "Ranking questions..."
+  return questions
+
+def rankQuestions(questions, file_name):
   ranked_questions = rank(questions)
   # Write ranked questions to a file.
   if not os.path.exists('rank'):
@@ -341,7 +369,10 @@ if __name__ == '__main__':
     rank_file.write(str(ranked_question[1]) + ' ' + ranked_question[0] +'\n')
   rank_file.close()
 
-  # Write questions to a file.
+  return ranked_questions
+
+# Write questions to file.
+def writeQuestions():
   if not os.path.exists('questions'):
     os.makedirs('questions')
   question_file = open('questions/questions_' + ntpath.basename(file_name), 'w')
@@ -349,10 +380,38 @@ if __name__ == '__main__':
     question_file.write(question+'\n')
   question_file.close()
 
-#TODO(sjoyner): Problems to handle:
-# 's at end of name entity is counted as separate word
+# TODO(mburman): use the logging module instead of prints
+# TODO(mburman): let user specify logging level
+if __name__ == '__main__':
+  file_name = sys.argv[1]
+
+  print "~ Tagging data..."
+  sentences = tagData(file_name)
+  print "DONE!\n"
+
+  print "~ Generating Questions..."
+  questions = generateQuestions(sentences)
+  print "DONE!\n"
+
+  print "~ Ranking questions..."
+  ranked_questions = rankQuestions(questions, file_name)
+  print "DONE!\n"
+
+  print "~ Writing questions to file..."
+  writeQuestions()
+  print "DONE!\n"
+
+  #END
+
+
+
+
+
+
+# TODO(sjoyner): Problems to handle:
 # In the Dempsay article there is a typo. It says Dempsay 3rd goal was scored...
 # so our question generator makes the sentence Who 3rd goal was scored
 # The name entity recognizer marks commas and similar things as separate words
 # so we need to fix that when we recombine sentences
-# Need to deal with sentences like Bob was born here and he did this. He should be converted.
+# Need to deal with sentences like Bob was born here and he did this. He
+# should be converted.
