@@ -327,7 +327,6 @@ def tagData(file_name):
   tagged_file = open(file_name, 'r')
   file_path = '../../question_generator' + file_name
   #subprocess.call(['./parse_text.sh', file_path])
-  #print "Tagging data..."
 
   # Tag data.
   if not os.path.exists('tagged'):
