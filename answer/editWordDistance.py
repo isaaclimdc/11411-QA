@@ -5,6 +5,12 @@ lib_path = os.path.abspath('../libraries')
 sys.path.append(lib_path)
 from nltk_helper import splitIntoSentences2, getSynonyms
 
+
+
+#######################
+###### Constants ######
+#######################
+
 INSERTION_COST = 0
 DELETION_COST = 1
 REPLACEMENT_COST = 1
@@ -14,6 +20,24 @@ WORD_THRESHOLD = 2
 
 # Synonym dict. Reset for every question.
 glob_syn_dict = dict()
+
+
+
+##############################
+###### Helper functions ######
+##############################
+
+def splitSentence(sentence):
+  s = sentence.split()
+  for i in range(len(s)):
+    s[i] = s[i].strip()
+  return s
+
+
+
+#################################
+###### Levenshtein-Damerau ######
+#################################
 
 def levenshteinDistance(word1, word2, memo):
 	len1 = len(word1)
@@ -37,43 +61,6 @@ def levenshteinDistance(word1, word2, memo):
 		count = min(count1, count2, count3)
 	memo[key] = count
 	return count
-
-def splitSentence(sentence):
-  s = sentence.split()
-  for i in range(len(s)):
-    s[i] = s[i].strip()
-  return s
-
-def cleanQuestion(question):
-  exclude = set(string.punctuation)
-  question = ''.join(ch for ch in question.lower() if ch not in exclude)
-
-  # TODO(mburman): there's probably a better way to do this
-  # It's important to maintain ordering here - multi word phrases should come
-  # earlier in the list so that we can replace maximally.
-  # Note: is should probably not be a bad start phrase by itself
-  bad_start_phrase = [
-      'how many',
-      'when did', 'why did', 'where did', 'who did', 'what did'
-      'when was', 'why was', 'where was', 'who was', 'what was',
-      'what does'
-      'name the', 'is the'
-      'what', 'where', 'why', 'when', 'who', 'which', 'how', 'did', 'name',
-      'does']
-
-  # If a bad phrase is present in the beginning of a question, replace it.
-  for bad_phrase in bad_start_phrase:
-    bad_index = question.find(bad_phrase)
-    if bad_index == 0:
-      question = question.replace(bad_phrase, '', 1)
-      break
-
-  return question
-
-def cleanAnswer(answer):
-  exclude = set(string.punctuation)
-  answer = ''.join(ch for ch in answer.lower() if ch not in exclude)
-  return answer
 
 def damerauDistance(s1, s2, memo):
   len1 = len(s1)
@@ -133,22 +120,68 @@ def damerauDistance(s1, s2, memo):
         dynamic_replacement_cost
 
     count = min(count1, count2, count3) # count4)
+
   memo[key] = count
+
   return count
 
-def makeSentenceArray(inputFile):
-	f = open(inputFile, "r")
-	sentences = f.readlines()
-	for i in range(len(sentences)):
-		sentences[i] = sentences[i].strip()
-	f.close()
-	return sentences
+def cleanQuestion(question):
+  exclude = set(string.punctuation)
+  question = ''.join(ch for ch in question.lower() if ch not in exclude)
 
+  # TODO(mburman): there's probably a better way to do this
+  # It's important to maintain ordering here - multi word phrases should come
+  # earlier in the list so that we can replace maximally.
+  # Note: is should probably not be a bad start phrase by itself
+  bad_start_phrase = [
+      'how many',
+      'when did', 'why did', 'where did', 'who did', 'what did'
+      'when was', 'why was', 'where was', 'who was', 'what was',
+      'what does'
+      'name the', 'is the'
+      'what', 'where', 'why', 'when', 'who', 'which', 'how', 'did', 'name',
+      'does']
+
+  # If a bad phrase is present in the beginning of a question, replace it.
+  for bad_phrase in bad_start_phrase:
+    bad_index = question.find(bad_phrase)
+    if bad_index == 0:
+      question = question.replace(bad_phrase, '', 1)
+      break
+
+  return question
+
+def cleanAnswer(answer):
+  exclude = set(string.punctuation)
+  answer = ''.join(ch for ch in answer.lower() if ch not in exclude)
+  
+  return answer
+
+
+
+
+
+
+
+
+
+########################
+###### Procedural ######
+########################
+
+def makeSentenceArray(inputFile):
+  f = open(inputFile, "r")
+  sentences = f.readlines()
+  for i in range(len(sentences)):
+    sentences[i] = sentences[i].strip()
+  f.close()
+  return sentences
 
 def computeDistances(questionFile, answerFile):
   global glob_syn_dict
   answerArray = splitIntoSentences2(answerFile)
   questionArray = makeSentenceArray(questionFile)
+  
   for question in questionArray:
     # Remove punctuations.
     question_edited = cleanQuestion(question)
@@ -184,7 +217,7 @@ def computeDistances(questionFile, answerFile):
 if __name__ == '__main__':
   if len(sys.argv) < 3:
     print 'Usage: ' + \
-        'python editWordDistance.py <question_file> <answer_file>\n'
+        './answer.py <question_file> <answer_file>\n'
     sys.exit(0)
 
   computeDistances(sys.argv[1], sys.argv[2])

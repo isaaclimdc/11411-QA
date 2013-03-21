@@ -2,15 +2,10 @@
 ========
 
 
-Compile
---------
-- Run `make` to get the binaries `ask` and `answer`
-- Run `make clean` to clean the directory
-
 Execute
 --------
-- Ask: `./ask article.txt 10`
-- Answer: `./answer article.txt questions.txt`
+- Ask: `./ask.py article.txt 10`
+- Answer: `./answer.py article.txt questions.txt`
 
 Team "sudo rm -rf /"
 --------
