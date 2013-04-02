@@ -33,6 +33,7 @@ print "DONE!\n"
 PERSON_TAG = "/PERSON"
 ORGANIZATION_TAG = "/ORGANIZATION"
 LOCATION_TAG = "/LOCATION"
+DATE_TAG = "/DATE"
 VERB_TAG_1 = "/VBD"
 VERB_TAG_2 = "/VBG"
 
@@ -95,7 +96,7 @@ def fixTense(word):
   end_index = word.find('/', start_index)
 
   correct_tense = word[start_index : end_index]
-  word = correct_tense + word[slash_index : ]
+  word = correct_tense + word[slash_index :]
   return word
 
 
@@ -115,7 +116,7 @@ def makeWhoQuestion(words, question_parts):
   found_verb = False
   for j in xrange(i, len(words)):
     if (hasTag(words[j], VERB_TAG_1) or hasTag(words[j], VERB_TAG_2)) and not found_verb:
-      words[j] = fixTense(words[j])
+      # words[j] = fixTense(words[j])
       found_verb = True
     word = removeTag(words[j])
     if appendToPreviousWord(word):
@@ -301,6 +302,7 @@ def makeWhenQuestions(sentences):
     # Pick out the date occurences
     for i in xrange(0, n):
       word = words[i]
+      # if hasTag(word, DATE_TAG):
       if r.match(word):
         if i > n/2:
           # Extract first half of sentence
@@ -332,7 +334,7 @@ def tagData(file_path):
   else:
     # Raw text file. Must tag it first (slow!)
     subprocess.check_call(['./tag_data.sh', file_path, \
-      "../ask/tagged/", "NER"])
+      "../ask/tagged/", "NER POS"])
     tagged_file_name = ntpath.basename(file_path)
     tagged_file_path = "tagged/" + tagged_file_name[:-4] + ".tag"
   
