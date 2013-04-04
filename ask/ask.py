@@ -1,8 +1,14 @@
 #!/usr/local/bin/python
 
-import logging, os, sys, string, re, subprocess, ntpath
+import argparse, logging, os, sys, string, re, subprocess, ntpath
 from qranker import rank
 
+parser = argparse.ArgumentParser(description="Ask")
+parser.add_argument("--txt", help="Original txt file", required="True")
+parser.add_argument("--tagged", help="Corresponding tagged file. Adding this \
+    will drastically reduce runtime. Otherwise a tagged file is generated \
+    from the txt file.")
+args = parser.parse_args()
 
 # Generic questions for each type of file we get.
 generic_soccer = [
@@ -329,27 +335,8 @@ def makeWhenQuestions(sentences):
 
   return when_questions
 
-def extractFirstNamedEntity(sentences):
-  entity = ''
-  for sentence in sentences:
-    words = sentence.split()
-    for word in words:
-      if PERSON_TAG in word:
-
-        # This convoluted stuff needs to happen because sometimes things are
-        # tagged as Landon/PERSON Donovan/PERSON Landon/PERSON (...) because of
-        # the way the file is. We want to ignore the second Landon
-        to_add = word.replace(PERSON_TAG, '')
-        if to_add not in entity:
-          entity += ' ' + word.replace(PERSON_TAG, '')
-        else:
-          return entity.strip()
-      elif entity != '':
-        return entity.strip()
-
-    # Only look at the first sentence for now.
-    break
-  return None;
+def extractEntity(content):
+  return content.split('\n', 1)[0]
 
 # TODO(mburman): These checks need to be
 def isSoccer(content):
@@ -372,7 +359,7 @@ def makeGenericQuestions(content, tagged_sentences):
   # Analyze the file to figure out which type it is - movie, soccer players,
   # constellations etc and add generic questions based on that.
   to_return = []
-  entity = extractFirstNamedEntity(tagged_sentences)
+  entity = extractEntity(content)
   if not entity:
     return to_return
 
@@ -482,14 +469,16 @@ def writeQuestions(questions, file_path):
 # TODO(mburman): use the logging module instead of prints
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
-  file_path = sys.argv[1]
+  file_path = args.txt
+  if args.tagged:
+    file_path = args.tagged
 
   print "~ Tagging data..."
   tagged_sentences = tagData(file_path)
   print "~ DONE!\n"
 
   print "~ Generating Questions..."
-  questions = generateQuestions(tagged_sentences, file_path)
+  questions = generateQuestions(tagged_sentences, args.txt)
   print "~ DONE!\n"
 
   print "~ Ranking questions..."
