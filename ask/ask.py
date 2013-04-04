@@ -8,11 +8,12 @@ from qranker import rank
 generic_soccer = [
     'When was [NAME] born?',
     'Where was [NAME] born?',
+    'What are some notable awards [NAME] has won?'
 ]
 
-generic_constellation = ['']
-generic_movies = ['']
-
+generic_constellation = []
+generic_movies = []
+generic_languages = []
 
 
 # Check dependencies
@@ -348,9 +349,22 @@ def extractFirstNamedEntity(sentences):
     break
   return None;
 
+# TODO(mburman): These checks need to be
 def isSoccer(content):
   if 'soccer' in content:
-    return True;
+    return True
+
+def isConstellation(content):
+  if 'constellation' in content:
+    return True
+
+def isLanguage(content):
+  if 'language' in content:
+    return True
+
+def isMovie(content):
+  if 'directed' in content:
+    return True
 
 def makeGenericQuestions(content, tagged_sentences):
   # Analyze the file to figure out which type it is - movie, soccer players,
@@ -366,6 +380,27 @@ def makeGenericQuestions(content, tagged_sentences):
       question = question.replace('[NAME]', entity)
       to_return.append('[GENERIC]' + question)
     return to_return
+
+  if isConstellation(content):
+    for question in generic_constellation:
+      question = question.replace('[NAME]', entity)
+      to_return.append('[GENERIC]' + question)
+    return to_return
+
+  if isLanguage(content):
+    for question in generic_language:
+      question = question.replace('[NAME]', entity)
+      to_return.append('[GENERIC]' + question)
+    return to_return
+
+  if isMovie(content):
+    for question in generic_movie:
+      question = question.replace('[NAME]', entity)
+      to_return.append('[GENERIC]' + question)
+    return to_return
+
+
+
 
 ########################
 ###### Procedural ######
