@@ -7,7 +7,7 @@ BAD_ATTRIBUTE = -5
 
 GOOD_ATTRIBUTE = -BAD_ATTRIBUTE
 GOOD_QUESTION = -BAD_QUESTION
-VERY_GOOD_QUESTION = 1000
+VERY_GOOD_QUESTION = -VERY_BAD_QUESTION
 
 INITIAL_CONFIDENCE = 0
 
@@ -27,7 +27,7 @@ def generate_confidence(question):
   # Questions shouldn't start with these phrases.
   # If question starts with a bad phrase, lower the rank
   bad_start_phrase = [
-      'who as', 'who of'
+      'who as ', 'who of '
   ]
   for bad_phrase in bad_start_phrase:
     bad_index = question.find(bad_phrase)
