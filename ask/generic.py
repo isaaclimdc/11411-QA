@@ -1,5 +1,10 @@
 #!/usr/local/bin/python
-from util import extractEntity
+
+# Certain generic questions can be asked irrespective of the actual entity
+# being talked about based on the category it falls in. For example, wrt movies,
+# 'Who directed (...)?' is a valid question.
+
+from util import *
 
 # Generic questions for each type of file we get.
 generic_soccer = [
@@ -20,7 +25,8 @@ generic_movie = [
     'Who directed [ENTITY]?',
     'Is [ENTITY] a British film?',
     'Who wrote [ENTITY]?',
-    'When was [ENTITY] released?'
+    'When was [ENTITY] released?',
+    'How many academic awards did [ENTITY] win?'
 ]
 
 generic_language = [
@@ -76,24 +82,4 @@ def makeGenericQuestions(content, tagged_sentences):
       to_return.append('[GENERIC]' + question)
     return to_return
 
-# TODO(mburman): These checks need to be stronger.
-def isSoccer(content):
-  content = content.lower()
-  if 'soccer' in content:
-    return True
 
-def isConstellation(content):
-  if 'constellation' in content:
-    return True
-
-def isProgrammingLanguage(content):
-  if 'programming language' in content:
-    return True
-
-def isLanguage(content):
-  if 'language' in content:
-    return True
-
-def isMovie(content):
-  if 'directed' in content:
-    return True

@@ -18,10 +18,13 @@ def generate_confidence(question):
   confidence = INITIAL_CONFIDENCE;
   question = question.lower()
 
-  # Generic questions are very good by default. I subtract one from the score to
-  # rank 'very good' specific questions higher than generic questions. Ideally,
-  # we don't want to show generic questions if we have good specific ones.
+  # Generic and specific questions are very good by default. I subtract two from
+  # the score to rank specific questions higher than generic questions. Also, if
+  # we've generated a VERY_GOOD_QUESTION by some other means, this ensures it is
+  # ranked higher than the generic and specific questions.
   if '[generic]' in question:
+    return VERY_GOOD_QUESTION - 2
+  if '[specific]' in question:
     return VERY_GOOD_QUESTION - 1
 
   # Questions shouldn't start with these phrases.
@@ -40,7 +43,8 @@ def rank(questions):
   # Generate confidence scores.
   confidence_map = {}
   for question in questions:
-    confidence_map[question.replace('[GENERIC]', '')] = generate_confidence(question)
+    #confidence_map[question.replace('[GENERIC]', '')] = generate_confidence(question)
+    confidence_map[question] = generate_confidence(question)
 
   # Sort into tuple (question, score).
   sorted_questions = sorted(confidence_map.iteritems(), key=operator.itemgetter(1))

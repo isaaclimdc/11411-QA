@@ -3,6 +3,7 @@
 import argparse, logging, os, sys, string, re, subprocess, ntpath
 from qranker import rank
 from generic import makeGenericQuestions
+from specific import makeSpecificQuestions
 from util import extractEntity
 
 parser = argparse.ArgumentParser(description="Ask")
@@ -374,6 +375,8 @@ def generateQuestions(tagged_sentences, original_file):
     generic_questions = makeGenericQuestions(content, tagged_sentences)
     if generic_questions:
       questions += generic_questions
+    specific_questions = makeSpecificQuestions(content, tagged_sentences)
+    questions += specific_questions
 
   return questions
 
