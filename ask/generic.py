@@ -11,7 +11,7 @@ generic_soccer = [
 
 generic_constellation = [
     'Where is [ENTITY] located?',
-    'Is [ENTITY] in the zodiac?'
+    'Is [ENTITY] in the zodiac?',
     'Is [ENTITY] one of the 88 modern constellations?',
     'Is Ptolemy credited with describing [ENTITY]?'
 ]
