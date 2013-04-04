@@ -325,20 +325,20 @@ def tagData(file_path):
   #     ./ask.py tagged/clint_dempsey_ans.tag
   # To tag then process (slow!), just give ask a .txt file:
   #     ./ask.py ../test_data/clint_dempsey_ans.txt
-  
+
   if file_path[-4:] == ".tag":
     # Preprocessed tag file
     tagged_file_path = file_path
   else:
+    # Process the tagged data
+    if not os.path.exists('tagged'):
+      os.makedirs('tagged')
+
     # Raw text file. Must tag it first (slow!)
     subprocess.check_call(['./tag_data.sh', file_path, \
       "../ask/tagged/", "NER"])
     tagged_file_name = ntpath.basename(file_path)
     tagged_file_path = "tagged/" + tagged_file_name[:-4] + ".tag"
-  
-  # Process the tagged data
-  if not os.path.exists('tagged'):
-    os.makedirs('tagged')
 
   tagged_file = open(tagged_file_path, 'r')
   sentences = tagged_file.readlines()
