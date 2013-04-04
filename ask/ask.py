@@ -12,14 +12,32 @@ args = parser.parse_args()
 
 # Generic questions for each type of file we get.
 generic_soccer = [
-    'When was [NAME] born?',
-    'Where was [NAME] born?',
-    'What are some notable awards [NAME] has won?'
+    'When was [ENTITY] born?',
+    'Where was [ENTITY] born?',
+    'Where did [ENTITY] grow up?',
+    'What are some notable awards [ENTITY] has won?'
 ]
 
-generic_constellation = []
-generic_movie = []
-generic_language = []
+generic_constellation = [
+    'Where is [ENTITY] located?',
+    'Is [ENTITY] in the zodiac?'
+    'Is [ENTITY] one of the 88 modern constellations?',
+    'Is Ptolemy credited with describing [ENTITY]?'
+]
+
+generic_movie = [
+    'Who directed [ENTITY]?',
+    'Is [ENTITY] a British film?',
+    'Who wrote [ENTITY]?',
+    'When was [ENTITY] released?'
+]
+
+generic_language = [
+    'Is [ENTITY] a west germanic language?',
+    'Is [ENTITY] a programming language?',
+    'Is [ENTITY] a romance language?',
+    'How did [ENTITY] originate?'
+]
 
 
 # Check dependencies
@@ -336,7 +354,11 @@ def makeWhenQuestions(sentences):
   return when_questions
 
 def extractEntity(content):
-  return content.split('\n', 1)[0]
+  entity = content.split('\n', 1)[0]
+  replace_regex = re.compile('\(programming\ language\)|language|\(film\)', re.IGNORECASE)
+
+  entity = replace_regex.sub('', entity)
+  return entity.strip()
 
 # TODO(mburman): These checks need to be
 def isSoccer(content):
@@ -366,25 +388,25 @@ def makeGenericQuestions(content, tagged_sentences):
   print "~ Entity: " + entity
   if isSoccer(content):
     for question in generic_soccer:
-      question = question.replace('[NAME]', entity)
+      question = question.replace('[ENTITY]', entity)
       to_return.append('[GENERIC]' + question)
     return to_return
 
   if isConstellation(content):
     for question in generic_constellation:
-      question = question.replace('[NAME]', entity)
+      question = question.replace('[ENTITY]', entity)
       to_return.append('[GENERIC]' + question)
     return to_return
 
   if isLanguage(content):
     for question in generic_language:
-      question = question.replace('[NAME]', entity)
+      question = question.replace('[ENTITY]', entity)
       to_return.append('[GENERIC]' + question)
     return to_return
 
   if isMovie(content):
     for question in generic_movie:
-      question = question.replace('[NAME]', entity)
+      question = question.replace('[ENTITY]', entity)
       to_return.append('[GENERIC]' + question)
     return to_return
 

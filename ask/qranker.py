@@ -18,9 +18,11 @@ def generate_confidence(question):
   confidence = INITIAL_CONFIDENCE;
   question = question.lower()
 
-  # Generic questions are very good by default.
+  # Generic questions are very good by default. I subtract one from the score to
+  # rank 'very good' specific questions higher than generic questions. Ideally,
+  # we don't want to show generic questions if we have good specific ones.
   if '[generic]' in question:
-    return VERY_GOOD_QUESTION
+    return VERY_GOOD_QUESTION - 1
 
   # Questions shouldn't start with these phrases.
   # If question starts with a bad phrase, lower the rank
