@@ -282,7 +282,7 @@ def recClean(parts):
 # Does the dirty work to transform a raw sentence containing
 # a date reference to a "when" question.
 def processWhenQuestion(question_parts):
-  question_parts = recClean(question_parts)
+  #question_parts = recClean(question_parts)
 
   # Convert the subject verb to present tense using NodeBox
   # TODO(idl):A smarter version of this. This only takes
