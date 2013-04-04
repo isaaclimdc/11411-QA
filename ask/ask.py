@@ -18,8 +18,8 @@ generic_soccer = [
 ]
 
 generic_constellation = []
-generic_movies = []
-generic_languages = []
+generic_movie = []
+generic_language = []
 
 
 # Check dependencies
