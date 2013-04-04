@@ -26,7 +26,12 @@ def generateMovieQuestions(content, tagged_sentences):
   return to_return
 
 def generateConstellationQuestions(content, tagged_sentences):
-  return []
+  to_return = []
+  entity = extractEntity(content)
+  if 'brightest' in content:
+    to_return.append('[SPECIFIC] Name some of the brightest star(s) in ' + entity)
+
+  return to_return
 
 def generateLanguageQuestions(content, tagged_sentences):
   return []
@@ -35,13 +40,17 @@ def generateProgrammingLanguageQuestions(content, tagged_sentences):
   return []
 
 def makeSpecificQuestions(content, tagged_sentences):
+  questions = []
+
   if isSoccer(content):
     return generateSoccerQuestions(content, tagged_sentences)
-  if isMovie(content):
+  elif isMovie(content):
     return generateMovieQuestions(content, tagged_sentences)
-  if isConstellation(content):
+  elif isConstellation(content):
     return generateConstellationQuestions(content, tagged_sentences)
-  if isLanguage(content):
+  elif isLanguage(content):
     return generateLanguageQuestions(content, tagged_sentences)
-  if isProgrammingLanguage(content):
+  elif isProgrammingLanguage(content):
     return generateProgrammingLanguageQuestions(content, tagged_sentences)
+
+  return questions
