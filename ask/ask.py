@@ -3,6 +3,18 @@
 import logging, os, sys, string, re, subprocess, ntpath
 from qranker import rank
 
+
+# Generic questions for each type of file we get.
+generic_soccer = [
+    'When was [NAME] born?',
+    'Where was [NAME] born?',
+]
+
+generic_constellation = ['']
+generic_movies = ['']
+
+
+
 # Check dependencies
 def checkDependencies():
   if os.path.isdir("../libraries/en") and \
@@ -69,10 +81,10 @@ def removePeriods(question_parts):
 def appendQuestionMark(question_parts):
   last_word = question_parts[-1]
   question_parts[-1] = last_word + '?'
-  return question_parts 
+  return question_parts
 
 # Truncate sentence after first occurence of "," or ";".
-# This is usually enough for a question.  
+# This is usually enough for a question.
 def truncateSentence(words):
   for i in xrange(0, len(words)):
     firstChar = words[i][0]
@@ -123,7 +135,7 @@ def makeWhoQuestion(words, question_parts):
       question_parts[len(question_parts)-1] = prev_word + word
     else:
       question_parts.append(word)
-  
+
   question_parts = removePeriods(question_parts)
   question_parts = appendQuestionMark(question_parts)
   question = ' '.join(question_parts)
@@ -186,7 +198,7 @@ def makeWhereDidQuestion(words, start_index, end_index):
       question_parts[-1] = prev_word + word
     else:
       question_parts.append(word)
-  
+
   question_parts = removePeriods(question_parts)
   question_parts = appendQuestionMark(question_parts)
   question = ' '.join(question_parts)
@@ -314,7 +326,46 @@ def makeWhenQuestions(sentences):
 
   return when_questions
 
+def extractFirstNamedEntity(sentences):
+  entity = ''
+  for sentence in sentences:
+    words = sentence.split()
+    for word in words:
+      if PERSON_TAG in word:
 
+        # This convoluted stuff needs to happen because sometimes things are
+        # tagged as Landon/PERSON Donovan/PERSON Landon/PERSON (...) because of
+        # the way the file is. We want to ignore the second Landon
+        to_add = word.replace(PERSON_TAG, '')
+        if to_add not in entity:
+          entity += ' ' + word.replace(PERSON_TAG, '')
+        else:
+          return entity.strip()
+      elif entity != '':
+        return entity.strip()
+
+    # Only look at the first sentence for now.
+    break
+  return None;
+
+def isSoccer(content):
+  if 'soccer' in content:
+    return True;
+
+def makeGenericQuestions(content, tagged_sentences):
+  # Analyze the file to figure out which type it is - movie, soccer players,
+  # constellations etc and add generic questions based on that.
+  to_return = []
+  entity = extractFirstNamedEntity(tagged_sentences)
+  if not entity:
+    return to_return
+
+  print "~ Entity: " + entity
+  if isSoccer(content):
+    for question in generic_soccer:
+      question = question.replace('[NAME]', entity)
+      to_return.append('[GENERIC]' + question)
+    return to_return
 
 ########################
 ###### Procedural ######
@@ -355,11 +406,17 @@ def cleanQuestion(question):
 
   return question
 
-def generateQuestions(sentences):
+def generateQuestions(tagged_sentences, original_file):
   questions = []
-  questions += makeWhoQuestions(sentences)
-  questions += makeWhenQuestions(sentences)
-  questions += makeWhereQuestions(sentences)
+  questions += makeWhoQuestions(tagged_sentences)
+  questions += makeWhenQuestions(tagged_sentences)
+  questions += makeWhereQuestions(tagged_sentences)
+
+  with open(original_file) as f:
+    content = f.read()
+    generic_questions = makeGenericQuestions(content, tagged_sentences)
+    if generic_questions:
+      questions += generic_questions
 
   return questions
 
@@ -391,11 +448,11 @@ if __name__ == '__main__':
   file_path = sys.argv[1]
 
   print "~ Tagging data..."
-  sentences = tagData(file_path)
+  tagged_sentences = tagData(file_path)
   print "~ DONE!\n"
 
   print "~ Generating Questions..."
-  questions = generateQuestions(sentences)
+  questions = generateQuestions(tagged_sentences, file_path)
   print "~ DONE!\n"
 
   print "~ Ranking questions..."

@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 
-import string, sys, subprocess, ntpath
+import string, sys, subprocess, ntpath, os
 
 POSITION = 'POS'
 NAMED_ENTITY = 'NER'
@@ -66,7 +66,7 @@ def parseXMLFile(xml_file, tag_types):
 
 def getFileName(file_path, trunc_ext):
   file_path = ntpath.basename(file_path)
-  
+
   if trunc_ext:
     return file_path[:-4]
   else:
@@ -92,7 +92,7 @@ if __name__ == '__main__':
   input_path_rel = '../../test_data/' + input_path
   output_dir = sys.argv[2]
   tag_types = sys.argv[3:]
-  
+
   # Execute the shell script to run StanfordCoreNLP, and wait for
   # it to complete.
   subprocess.check_call(['./parse_text.sh', input_path_rel])
@@ -103,6 +103,7 @@ if __name__ == '__main__':
   tagged_sentences = parseXMLFile(xml_file, tag_types)
 
   # For the input file X.txt, generate X.tags
+
   output_path = getOutputFilePath(output_dir, input_path)
   output_file = open(output_path, 'w+')
   output_file.write(tagged_sentences)
