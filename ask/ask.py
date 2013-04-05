@@ -3,6 +3,7 @@
 import argparse, logging, os, sys, string, re, subprocess, ntpath
 from qranker import rank
 from generic import makeGenericQuestions
+from specific import makeSpecificQuestions
 from util import extractEntity
 
 parser = argparse.ArgumentParser(description="Ask")
@@ -264,6 +265,9 @@ def makeWhereQuestions(sentences):
 
 # Remove extra words/symbols, RECURSIVELY :(
 def recClean(parts):
+  if len(parts) == 0:
+      return parts
+      
   firstWord = parts[0]
   lastWord = parts[-1]
   if firstWord == "on" or firstWord == "." or \
@@ -278,7 +282,7 @@ def recClean(parts):
 # Does the dirty work to transform a raw sentence containing
 # a date reference to a "when" question.
 def processWhenQuestion(question_parts):
-  #question_parts = recClean(question_parts)
+  question_parts = recClean(question_parts)
 
   # Convert the subject verb to present tense using NodeBox
   # TODO(idl):A smarter version of this. This only takes
@@ -405,6 +409,8 @@ def generateQuestions(tagged_sentences, original_file):
     generic_questions = makeGenericQuestions(content, tagged_sentences)
     if generic_questions:
       questions += generic_questions
+    specific_questions = makeSpecificQuestions(content, tagged_sentences)
+    questions += specific_questions
 
   return questions
 
