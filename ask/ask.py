@@ -64,21 +64,41 @@ def removeTag(word):
   return word
 
 def appendToPreviousWord(word):
-  appendages = [',', "'s"]
+  appendages = [',', "'s", ".''", "'ve"]
   for appendage in appendages:
     if word == appendage:
       return True
   return False
 
-def removePeriods(question_parts):
+def condenseWords(question_parts):
+  i = 0
+  while i < len(question_parts):
+    if i != 0 and appendToPreviousWord(question_parts[i]):
+      word = question_parts[i]
+      question_parts[i-1] = question_parts[i-1] + word
+      question_parts = question_parts[:i] + question_parts[i+1:]
+    else:
+      i+=1
+  return question_parts
+
+def removePunctuation(question_parts):
   # If last token of the sentence is a period, remove it.
   if question_parts[-1] == ".":
+    question_parts = question_parts[:-1]
+  elif question_parts[-1] == ",":
     question_parts = question_parts[:-1]
   return question_parts
 
 def appendQuestionMark(question_parts):
   last_word = question_parts[-1]
   question_parts[-1] = last_word + '?'
+  return question_parts
+
+def appendQuotes(question_parts):
+  question_parts[1] = removeTag(question_parts[0]) + question_parts[1]
+  question_parts[-2] = removeTag(question_parts[-2]) + question_parts[-1]
+  question_parts = question_parts[1 : -1]
+  print "append", question_parts
   return question_parts
 
 # Truncate sentence after first occurence of "," or ";".
@@ -99,6 +119,15 @@ def hasRootWord(word, root_word):
   actual_root_word = word[start_index : end_index]
   return actual_root_word == root_word
 
+# See if the given root words are the root
+# of any of the given words
+def containsKeyRootWords(words, root_words):
+  for word in words:
+    for root_word in root_words:
+      if hasRootWord(word, root_word):
+        return True
+  return False
+
 def fixTense(word):
   slash_index = word.find('/')
   start_index = slash_index + 1
@@ -108,10 +137,15 @@ def fixTense(word):
   word = correct_tense + word[slash_index :]
   return word
 
-def putInQuestionFormat(question_parts):
-  for i in range(len(question_parts)):
+def removeTagsFromWords(question_parts):
+ for i in range(len(question_parts)):
     question_parts[i] = removeTag(question_parts[i])
-  question_parts = removePeriods(question_parts)
+ return question_parts  
+
+def putInQuestionFormat(question_parts):
+  question_parts = removeTagsFromWords(question_parts)
+  question_parts = condenseWords(question_parts)
+  question_parts = removePunctuation(question_parts)
   question_parts = appendQuestionMark(question_parts)
   question = " ".join(question_parts)
   question = cleanQuestion(question)
@@ -133,18 +167,14 @@ def makeWhoQuestion(words, question_parts):
   found_verb = False
   for j in xrange(i, len(words)):
     if (hasTag(words[j], VERB_TAG_1) or hasTag(words[j], VERB_TAG_2)) and not found_verb:
-      # words[j] = fixTense(words[j])
+      words[j] = fixTense(words[j])
       found_verb = True
-    word = removeTag(words[j])
-    if appendToPreviousWord(word):
-      prev_word = question_parts[len(question_parts)-1]
-      question_parts[len(question_parts)-1] = prev_word + word
-    else:
-      question_parts.append(word)
-
-  #question_parts = removePeriods(question_parts)
-  #question_parts = appendQuestionMark(question_parts)
-  #question = ' '.join(question_parts)
+    #word = removeTag(words[j])
+    #if appendToPreviousWord(word):
+     # prev_word = question_parts[len(question_parts)-1]
+     # question_parts[len(question_parts)-1] = prev_word + word
+    #else:
+    question_parts.append(words[j])
   question = putInQuestionFormat(question_parts)
   return question
 
@@ -333,8 +363,13 @@ def makeWhenQuestions(sentences):
 
   return when_questions
 
+##########################################
+######### Quote Questions ################
+##########################################
+
 def findQuoteQuestions(tagged_sentences):
   quote_questions = []
+  root_words = ['say']
   for sentence in tagged_sentences:
     found_quote = False
     quote_start_index = -1
@@ -343,19 +378,27 @@ def findQuoteQuestions(tagged_sentences):
     for i in range(len(words)):
       if hasTag(words[i], "/``"):
         found_quote = True
-        print "word ", words[i]
         quote_start_index = i
       elif found_quote and hasTag(words[i], "/''"):
         # We want to remove edge cases like
         # Clint 'Drew' Dempsey.
         if (i - quote_start_index > 4):
-          print "sentence ", sentence
-          print "start ", quote_start_index
-          print "end ", i+1
-          question_parts = ['[QUOTE]', 'Who', 'said'] + words[quote_start_index : i + 1]
-          print "parts", question_parts
-          question = putInQuestionFormat(question_parts)        
-          quote_questions.append(question)
+          # There are some quotes we don't want such as
+          # what someone's shirt said.
+          if containsKeyRootWords(words, root_words):
+            question_parts = words[quote_start_index + 1 : i] 
+            question_parts = removeTagsFromWords(question_parts)
+            print "parts", question_parts
+            question_parts = removePunctuation(question_parts)
+            print "remove", question_parts
+            question_parts = [words[quote_start_index]] + question_parts + [words[i]]
+            print "quotes", question_parts
+            question_parts = appendQuotes(question_parts)
+            question_parts = ['[QUOTE]', 'Who', 'said'] + question_parts
+            question = putInQuestionFormat(question_parts)       
+            print question
+            print
+            quote_questions.append(question)
           found_quote = False
   return quote_questions
 
@@ -379,7 +422,7 @@ def tagData(file_path):
     print file_path
     # Raw text file. Must tag it first (slow!)
     subprocess.check_call(['./tag_data.sh', file_path, \
-      "../ask/tagged/", "NER POS"])
+      "../ask/tagged/", "lemma NER POS"])
     tagged_file_name = ntpath.basename(file_path)
     tagged_file_path = "tagged/" + tagged_file_name[:-4] + ".tag"
 
