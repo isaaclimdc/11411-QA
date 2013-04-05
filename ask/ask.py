@@ -1,7 +1,16 @@
 #!/usr/local/bin/python
 
-import logging, os, sys, string, re, subprocess, ntpath
+import argparse, logging, os, sys, string, re, subprocess, ntpath
 from qranker import rank
+from generic import makeGenericQuestions
+from util import extractEntity
+
+parser = argparse.ArgumentParser(description="Ask")
+parser.add_argument("--txt", help="Original txt file", required="True")
+parser.add_argument("--tagged", help="Corresponding tagged file. Adding this \
+    will drastically reduce runtime. Otherwise a tagged file is generated \
+    from the txt file.")
+args = parser.parse_args()
 
 # Check dependencies
 def checkDependencies():
@@ -23,8 +32,7 @@ sys.path.append(lib_path)
 
 from nltk_helper import splitIntoSentences2, getSynonyms
 import en
-print "DONE!\n"
-
+print "~ DONE!\n"
 
 #######################
 ###### Constants ######
@@ -33,6 +41,7 @@ print "DONE!\n"
 PERSON_TAG = "/PERSON"
 ORGANIZATION_TAG = "/ORGANIZATION"
 LOCATION_TAG = "/LOCATION"
+DATE_TAG = "/DATE"
 VERB_TAG_1 = "/VBD"
 VERB_TAG_2 = "/VBG"
 
@@ -69,10 +78,10 @@ def removePeriods(question_parts):
 def appendQuestionMark(question_parts):
   last_word = question_parts[-1]
   question_parts[-1] = last_word + '?'
-  return question_parts 
+  return question_parts
 
 # Truncate sentence after first occurence of "," or ";".
-# This is usually enough for a question.  
+# This is usually enough for a question.
 def truncateSentence(words):
   for i in xrange(0, len(words)):
     firstChar = words[i][0]
@@ -95,9 +104,17 @@ def fixTense(word):
   end_index = word.find('/', start_index)
 
   correct_tense = word[start_index : end_index]
-  word = correct_tense + word[slash_index : ]
+  word = correct_tense + word[slash_index :]
   return word
 
+def putInQuestionFormat(question_parts):
+  for i in range(len(question_parts)):
+    question_parts[i] = removeTag(question_parts[i])
+  question_parts = removePeriods(question_parts)
+  question_parts = appendQuestionMark(question_parts)
+  question = " ".join(question_parts)
+  question = cleanQuestion(question)
+  return question
 
 
 #############################
@@ -115,7 +132,7 @@ def makeWhoQuestion(words, question_parts):
   found_verb = False
   for j in xrange(i, len(words)):
     if (hasTag(words[j], VERB_TAG_1) or hasTag(words[j], VERB_TAG_2)) and not found_verb:
-      words[j] = fixTense(words[j])
+      # words[j] = fixTense(words[j])
       found_verb = True
     word = removeTag(words[j])
     if appendToPreviousWord(word):
@@ -123,10 +140,11 @@ def makeWhoQuestion(words, question_parts):
       question_parts[len(question_parts)-1] = prev_word + word
     else:
       question_parts.append(word)
-  
-  question_parts = removePeriods(question_parts)
-  question_parts = appendQuestionMark(question_parts)
-  question = ' '.join(question_parts)
+
+  #question_parts = removePeriods(question_parts)
+  #question_parts = appendQuestionMark(question_parts)
+  #question = ' '.join(question_parts)
+  question = putInQuestionFormat(question_parts)
   return question
 
 # Find sentences that we can turn into
@@ -174,7 +192,7 @@ def makeWhoQuestions(sentences):
 ###############################
 
 def makeWhereDidQuestion(words, start_index, end_index):
-  question_parts = ['Where', 'did']
+  question_parts = ['[WHERE]', 'Where', 'did']
   found_verb = False
   for i in xrange(start_index, end_index):
     if (hasTag(words[i], VERB_TAG_1) or hasTag(words[i], VERB_TAG_2)) and not found_verb:
@@ -186,10 +204,8 @@ def makeWhereDidQuestion(words, start_index, end_index):
       question_parts[-1] = prev_word + word
     else:
       question_parts.append(word)
-  
-  question_parts = removePeriods(question_parts)
-  question_parts = appendQuestionMark(question_parts)
-  question = ' '.join(question_parts)
+
+  question = putInQuestionFormat(question_parts)
   return question
 
 def containsSpecialCase(words, key_phrase):
@@ -262,7 +278,7 @@ def recClean(parts):
 # Does the dirty work to transform a raw sentence containing
 # a date reference to a "when" question.
 def processWhenQuestion(question_parts):
-  question_parts = recClean(question_parts)
+  #question_parts = recClean(question_parts)
 
   # Convert the subject verb to present tense using NodeBox
   # TODO(idl):A smarter version of this. This only takes
@@ -275,10 +291,8 @@ def processWhenQuestion(question_parts):
   question_parts = truncateSentence(question_parts)
 
   # Join everything together.
-  question_parts = ["When", "did"] + question_parts
-  question_parts = appendQuestionMark(question_parts)
-  question = " ".join(question_parts)
-  question = cleanQuestion(question)
+  question_parts = ["[WHEN]", "When", "did"] + question_parts
+  question = putInQuestionFormat(question_parts)
 
   return question
 
@@ -301,6 +315,7 @@ def makeWhenQuestions(sentences):
     # Pick out the date occurences
     for i in xrange(0, n):
       word = words[i]
+      # if hasTag(word, DATE_TAG):
       if r.match(word):
         if i > n/2:
           # Extract first half of sentence
@@ -314,7 +329,31 @@ def makeWhenQuestions(sentences):
 
   return when_questions
 
-
+def findQuoteQuestions(tagged_sentences):
+  quote_questions = []
+  for sentence in tagged_sentences:
+    found_quote = False
+    quote_start_index = -1
+    sentence = sentence.strip()
+    words = sentence.split()
+    for i in range(len(words)):
+      if hasTag(words[i], "/``"):
+        found_quote = True
+        print "word ", words[i]
+        quote_start_index = i
+      elif found_quote and hasTag(words[i], "/''"):
+        # We want to remove edge cases like
+        # Clint 'Drew' Dempsey.
+        if (i - quote_start_index > 4):
+          print "sentence ", sentence
+          print "start ", quote_start_index
+          print "end ", i+1
+          question_parts = ['[QUOTE]', 'Who', 'said'] + words[quote_start_index : i + 1]
+          print "parts", question_parts
+          question = putInQuestionFormat(question_parts)        
+          quote_questions.append(question)
+          found_quote = False
+  return quote_questions
 
 ########################
 ###### Procedural ######
@@ -325,20 +364,20 @@ def tagData(file_path):
   #     ./ask.py tagged/clint_dempsey_ans.tag
   # To tag then process (slow!), just give ask a .txt file:
   #     ./ask.py ../test_data/clint_dempsey_ans.txt
-  
+
   if file_path[-4:] == ".tag":
     # Preprocessed tag file
     tagged_file_path = file_path
   else:
+    # Process the tagged data
+    if not os.path.exists('tagged'):
+      os.makedirs('tagged')
+    print file_path
     # Raw text file. Must tag it first (slow!)
     subprocess.check_call(['./tag_data.sh', file_path, \
-      "../ask/tagged/", "NER"])
+      "../ask/tagged/", "NER POS"])
     tagged_file_name = ntpath.basename(file_path)
     tagged_file_path = "tagged/" + tagged_file_name[:-4] + ".tag"
-  
-  # Process the tagged data
-  if not os.path.exists('tagged'):
-    os.makedirs('tagged')
 
   tagged_file = open(tagged_file_path, 'r')
   sentences = tagged_file.readlines()
@@ -355,11 +394,17 @@ def cleanQuestion(question):
 
   return question
 
-def generateQuestions(sentences):
+def generateQuestions(tagged_sentences, original_file):
   questions = []
-  questions += makeWhoQuestions(sentences)
-  questions += makeWhenQuestions(sentences)
-  questions += makeWhereQuestions(sentences)
+  questions += makeWhoQuestions(tagged_sentences)
+  questions += makeWhenQuestions(tagged_sentences)
+  questions += makeWhereQuestions(tagged_sentences)
+  questions += findQuoteQuestions(tagged_sentences)
+  with open(original_file) as f:
+    content = f.read()
+    generic_questions = makeGenericQuestions(content, tagged_sentences)
+    if generic_questions:
+      questions += generic_questions
 
   return questions
 
@@ -388,14 +433,18 @@ def writeQuestions(questions, file_path):
 # TODO(mburman): use the logging module instead of prints
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
-  file_path = sys.argv[1]
+  file_path = args.txt
+  
+  original_file = '../test_data/' + file_path
+  if args.tagged:
+    file_path = args.tagged
 
   print "~ Tagging data..."
-  sentences = tagData(file_path)
+  tagged_sentences = tagData(file_path)
   print "~ DONE!\n"
 
   print "~ Generating Questions..."
-  questions = generateQuestions(sentences)
+  questions = generateQuestions(tagged_sentences, original_file)
   print "~ DONE!\n"
 
   print "~ Ranking questions..."

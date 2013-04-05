@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 
-import string, sys, subprocess
+import string, sys, subprocess, ntpath, os
 
 POSITION = 'POS'
 NAMED_ENTITY = 'NER'
@@ -91,10 +91,25 @@ def parseXMLFile(xml_file, tag_types):
       sentences.append(tagged_sentence)
       tagged_sentences = '\n'.join(sentences)
     line = xml_file.readline()
+  tagged_sentences = '\n'.join(sentences)
+  return tagged_sentences
+
+def getFileName(file_path, trunc_ext):
+  file_path = ntpath.basename(file_path)
+
+  if trunc_ext:
+    return file_path[:-4]
+  else:
+    return file_path
 
   print 'dependencies'
   print dependencies
   return tagged_sentences
+
+def getOutputFilePath(output_dir, input_path):
+  file_name = getFileName(input_path, True)
+  output_path = output_dir + file_name + '.tag'
+  return output_path
 
 def getXMLFileLocation(file_name):
   xml_file = 'tmp/' + file_name + '.xml'
@@ -106,18 +121,23 @@ if __name__ == '__main__':
         './stanford_helper.py <file> <output> <tag_type>\n'
     sys.exit(0)
 
-  file_name = sys.argv[1]
-  file_path_stanford = '../../helpers/' + file_name
-  output_name = sys.argv[2]
+  input_path = sys.argv[1]
+  output_dir = sys.argv[2]
   tag_types = sys.argv[3:]
+  input_path_rel = '../../test_data/' + input_path
 
-  subprocess.Popen(['./parse_text.sh', file_path_stanford]).wait()
+  # Execute the shell script to run StanfordCoreNLP, and wait for
+  # it to complete.
+  subprocess.check_call(['./parse_text.sh', input_path_rel])
 
-  xml_file = getXMLFileLocation(file_name)
+  xml_file = getXMLFileLocation(input_path)
 
   xml_file = open(xml_file, 'r')
   tagged_sentences = parseXMLFile(xml_file, tag_types)
-  
-  output_file = open(output_name, 'w+')
+
+  # For the input file X.txt, generate X.tags
+
+  output_path = getOutputFilePath(output_dir, input_path)
+  output_file = open(output_path, 'w+')
   output_file.write(tagged_sentences)
   output_file.close()
