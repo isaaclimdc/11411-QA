@@ -346,16 +346,21 @@ def processWhenQuestion(question_parts):
   # Convert the subject verb to present tense using NodeBox
   # TODO(idl):A smarter version of this. This only takes
   # care of 1 case.
-  try:
-    question_parts[1] = en.verb.present(question_parts[1])
-  except:
-    pass
+  for i in xrange (0, len(question_parts)):
+    try:
+      question_parts[i] = en.verb.present(question_parts[i])
+      break
+    except:
+      pass
 
   question_parts = truncateSentence(question_parts)
 
   # Join everything together.
   question_parts = ["[WHEN]", "When", "did"] + question_parts
   question = putInQuestionFormat(question_parts)
+
+  if len(question_parts) < 5:
+    return None
 
   return question
 
@@ -387,8 +392,10 @@ def makeWhenQuestions(sentences):
           # Extract second half of sentence
           extracted = words[i+1:]
 
+
         question = processWhenQuestion(extracted)
-        when_questions.append(question)
+        if question != None:
+          when_questions.append(question)
 
   return when_questions
 
@@ -498,6 +505,7 @@ def tagData(file_path):
   tagged_file = open(tagged_file_path, 'r')
   sentences = tagged_file.readlines()
   tagged_file.close()
+  subprocess.check_call(['rm', '-rf', '../helpers/tmp'])
 
   return sentences
 
