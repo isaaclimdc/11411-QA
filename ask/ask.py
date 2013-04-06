@@ -561,6 +561,9 @@ def preprocessFile(file_path):
         line.endswith("?") or line == ""):
       line = line + "."
     line = line + "\n"
+    # Remove everything after See also.'
+    if line == 'See also.\n':
+      break
     preprocess_text.write(line)
   file_text.close()
   preprocess_text.close()
@@ -569,13 +572,10 @@ def preprocessFile(file_path):
 # TODO(mburman): use the logging module instead of prints
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
-  file_path = args.txt
-
+  file_path = preprocessFile(args.txt)
   original_file = '../test_data/' + file_path
   if args.tagged:
     file_path = args.tagged
-  else:
-    file_path = preprocessFile(file_path)
 
   print "~ Tagging data..."
   tagged_sentences = tagData(file_path)

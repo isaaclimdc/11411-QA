@@ -26,5 +26,8 @@ def isLanguage(content):
     return True
 
 def isMovie(content):
-  if 'directed' in content:
-    return True
+  movie_signals = ['directed', 'film']
+  if all(x in content for x in movie_signals):
+    extra_signals = ['star', 'played']
+    if any(y in content for y in extra_signals):
+      return True
