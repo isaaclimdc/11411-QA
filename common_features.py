@@ -89,3 +89,10 @@ print "Constellation word length: " + str(len(constellation_words))
 movie_words = get_common_features(movie_files)
 print "Movie words: \n" + str(movie_words)
 print "Movie word length: " + str(len(movie_words))
+
+soccer_word_set = set(soccer_words)
+language_word_set = set(language_words)
+programming_word_set = set(programming_words)
+constellation_word_set = set(constellation_words)
+movie_word_set = set(movie_words)
+
