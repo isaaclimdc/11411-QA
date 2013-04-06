@@ -5,6 +5,7 @@ from qranker import rank
 from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
 from util import extractEntity
+from nltk.corpus import wordnet
 
 parser = argparse.ArgumentParser(description="Ask")
 parser.add_argument("--txt", help="Original txt file", required="True")
@@ -45,7 +46,8 @@ LOCATION_TAG = "/LOCATION"
 DATE_TAG = "/DATE"
 VERB_TAG_1 = "/VBD"
 VERB_TAG_2 = "/VBG"
-
+PRESENT_TENSE = "PRESENT_TENSE"
+PAST_TENSE = "PAST_TENSE"
 
 
 ##############################
@@ -177,6 +179,31 @@ def putInQuestionFormat(question_parts):
   question = " ".join(question_parts)
   question = cleanQuestion(question)
   return question
+
+def getHeadVerbTense(question_parts):
+  headVerb = None
+
+  for origWord in question_parts:
+    try:
+      word = en.verb.present(origWord)
+    except:
+      continue
+
+    if en.is_verb(word):
+      headVerb = origWord
+      break
+
+  if headVerb == None:
+    return "NO_HEAD_VERB"
+
+  tense = en.verb.tense(headVerb)
+
+  if "past" in tense:
+    return PAST_TENSE
+  elif "present" in tense or "infinitive" in tense:
+    return PRESENT_TENSE
+  else:
+    return None
 
 
 #############################
@@ -344,12 +371,24 @@ def processWhenQuestion(question_parts):
   question_parts = recClean(question_parts)
 
   # Convert the subject verb to present tense using NodeBox
-  # TODO(idl):A smarter version of this. This only takes
-  # care of 1 case.
   for i in xrange (0, len(question_parts)):
     try:
-      question_parts[i] = en.verb.present(question_parts[i])
-      break
+      theVerb = en.verb.present(question_parts[i])
+    except:
+      theVerb = None
+      pass
+
+    if theVerb != None:
+      syns = wordnet.synsets(theVerb)
+
+      for s in syns:
+        for l in s.lemmas:
+          # print l.name
+          if l.name != theVerb:
+            theVerb = l.name
+            break
+    try:
+      question_parts[i] = en.verb.present(theVerb)
     except:
       pass
 
@@ -359,7 +398,7 @@ def processWhenQuestion(question_parts):
   question_parts = ["[WHEN]", "When", "did"] + question_parts
   question = putInQuestionFormat(question_parts)
 
-  if len(question_parts) < 5:
+  if len(question_parts) < 4:
     return None
 
   return question
