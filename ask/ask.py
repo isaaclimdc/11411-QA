@@ -144,6 +144,17 @@ def containsKeyRootWords(words, root_words):
         return True
   return False
 
+# If we have a sentence like
+# In 1902, Bob did this. and the
+# index is in the second half
+# of the sentence, it will find the
+# index Bob is at. 
+def findBeginningOfSegment(words, i):
+  for j in range(i, -1, -1):
+    if hasTag(words[j], "/,"):
+      return j+1
+  return 0
+
 def fixTense(word):
   slash_index = word.find('/')
   start_index = slash_index + 1
@@ -426,8 +437,12 @@ def makeYesNoQuestion(tagged_sentences):
   yes_no_questions = []
   for sentence in tagged_sentences:
     words = sentence.split()
-    for i in range(len(words)):
+    for i in xrange(len(words)):
       if hasTag(words[i], "/VB"):
+        index = findBeginningOfSegment(words, i)
+        pre_segment = words[:index]
+        words = words[index:]
+        i = i - index
         if hasRootWord(words[i], "be"):
           if hasTag(words[i-1], "/MD"):
             temp = words[i]
@@ -436,24 +451,25 @@ def makeYesNoQuestion(tagged_sentences):
         else:
           if (hasTag(words[i], "/VBZ") or
               hasTag(words[i], "/VBP")):
-            words[i] = "Did"
+            words[i] = "did"
           else:
-            words = words[:i] + ["Did"] + words[i:]
+            words = words[:i] + ["did"] + words[i:]
           for j in range(i+1,len(words)):
             if hasTag(words[j], "/VB"):
               words[j] = fixTense(words[j])
               break
-        words[i] = words[i].title()
         if not (hasTag(words[0], PERSON_TAG) or 
                 hasTag(words[0], ORGANIZATION_TAG) or
                 hasTag(words[0], LOCATION_TAG)):
           words[0] = words[0].lower()
-        question_parts= ['[YES]', words[i]] + words[:i] + words[i+1:]
+        question_parts= ['[YES]'] + pre_segment + [words[i]] + words[:i] + words[i+1:]
+        #print question_parts
+        question_parts[1] = question_parts[1].title()
         #print "sentence", sentence
         question = putInQuestionFormat(question_parts)
         yes_no_questions.append(question)
-        #print question
-        #print
+        print question
+        print
         break
   return yes_no_questions
 
@@ -535,6 +551,23 @@ def writeQuestions(questions, file_path):
     question_file.write(question+'\n')
   question_file.close()
 
+def preprocessFile(file_path):
+  relative_file_path = "../test_data/" + file_path
+  file_text = open(relative_file_path, "r")
+  preprocess_path = "preprocess-" + file_path
+  relative_preprocess_path = "../test_data/" + preprocess_path
+  preprocess_text = open(relative_preprocess_path, "w")
+  for line in file_text.readlines():
+    line = line.strip()
+    if not (line.endswith(".") or line.endswith("!") or
+        line.endswith("?") or line == ""):
+      line = line + "."
+    line = line + "\n"
+    preprocess_text.write(line)
+  file_text.close()
+  preprocess_text.close()
+  return preprocess_path
+
 # TODO(mburman): use the logging module instead of prints
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
@@ -543,6 +576,8 @@ if __name__ == '__main__':
   original_file = '../test_data/' + file_path
   if args.tagged:
     file_path = args.tagged
+  else:
+    file_path = preprocessFile(file_path)
 
   print "~ Tagging data..."
   tagged_sentences = tagData(file_path)
