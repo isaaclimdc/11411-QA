@@ -4,7 +4,7 @@ import argparse, logging, os, sys, string, re, subprocess, ntpath
 from qranker import rank
 from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
-from util import extractEntity
+from util import *
 from nltk.corpus import wordnet
 
 parser = argparse.ArgumentParser(description="Ask")
@@ -549,6 +549,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
         #print "sentence", sentence
         question = putInQuestionFormat(question_parts)
         yes_no_questions.append(question)
+        print question
         break
   return yes_no_questions
 
@@ -569,13 +570,11 @@ def tagData(file_path):
     # Process the tagged data
     if not os.path.exists('tagged'):
       os.makedirs('tagged')
-    print "FILE_PATH IS ",file_path
     # Raw text file. Must tag it first (slow!)
     subprocess.check_call(['./tag_data.sh', file_path, \
       "../ask/tagged/", "lemma NER POS"])
     tagged_file_name = ntpath.basename(file_path)
     tagged_file_path = "tagged/" + tagged_file_name[:-4] + ".tag"
-  print "DONEEEEEEE\n"
   tagged_file = open(tagged_file_path, 'r')
   sentences = tagged_file.readlines()
   tagged_file.close()
