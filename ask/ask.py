@@ -64,7 +64,7 @@ def removeTag(word):
   return word
 
 def appendToPreviousWord(word):
-  appendages = [',', "'s", ".''", "'ve"]
+  appendages = [',', "'s", ".''", "'ve", "n't", "'", "''"]
   for appendage in appendages:
     if word == appendage:
       return True
@@ -78,15 +78,17 @@ def condenseWords(question_parts):
       question_parts[i-1] = question_parts[i-1] + word
       question_parts = question_parts[:i] + question_parts[i+1:]
     else:
+      if question_parts[i] == "``":
+        question_parts[i] = question_parts[i] + question_parts[i+1]
+        question_parts = question_parts[:i+1] + question_parts[i+2:]
       i+=1
   return question_parts
 
 def removePunctuation(question_parts):
-  # If last token of the sentence is a period, remove it.
-  if question_parts[-1] == ".":
-    question_parts = question_parts[:-1]
-  elif question_parts[-1] == ",":
-    question_parts = question_parts[:-1]
+  punctuation = ['.', ',', '?']
+  for p in punctuation:
+    if question_parts[-1] == p:
+      question_parts = question_parts[:-1]
   return question_parts
 
 def appendQuestionMark(question_parts):
@@ -98,7 +100,6 @@ def appendQuotes(question_parts):
   question_parts[1] = removeTag(question_parts[0]) + question_parts[1]
   question_parts[-2] = removeTag(question_parts[-2]) + question_parts[-1]
   question_parts = question_parts[1 : -1]
-  print "append", question_parts
   return question_parts
 
 # Truncate sentence after first occurence of "," or ";".
@@ -109,6 +110,21 @@ def truncateSentence(words):
     if firstChar == ',' or firstChar == ';':
       return words[:i]
 
+  return words
+
+# Takes into account situations like
+# 'He was about to do this when person, sent by blah, arrived'
+def truncateSentence2(words):
+  subsentence_index = -1
+  for i in xrange(len(words)):
+    first_char = words[i][0]
+    if first_char == ';':
+      return words[:i]
+    elif first_char == ',' and subsentence_index != -1:
+      words = words[:subsentence_index] + words[i + 1:]
+      return words
+    elif first_char == ',':
+      subsentence_index = i
   return words
 
 def hasRootWord(word, root_word):
@@ -166,15 +182,19 @@ def makeWhoQuestion(words, question_parts):
       break
   found_verb = False
   for j in xrange(i, len(words)):
-    if (hasTag(words[j], VERB_TAG_1) or hasTag(words[j], VERB_TAG_2)) and not found_verb:
-      words[j] = fixTense(words[j])
-      found_verb = True
+    #if (hasTag(words[j], VERB_TAG_1) or hasTag(words[j], VERB_TAG_2)) and not found_verb:
+      #words[j] = fixTense(words[j])
+      #found_verb = True
     #word = removeTag(words[j])
     #if appendToPreviousWord(word):
      # prev_word = question_parts[len(question_parts)-1]
      # question_parts[len(question_parts)-1] = prev_word + word
     #else:
     question_parts.append(words[j])
+  
+  if containsKeyRootWords(words, ['star']):
+    question_parts[0] = "What"
+  #question_parts = question_parts + words
   question = putInQuestionFormat(question_parts)
   return question
 
@@ -186,34 +206,32 @@ def makeWhoQuestions(sentences):
     sentence = sentence.strip()
     words = sentence.split()
 
-    words = truncateSentence(words)
+    words = truncateSentence2(words)
 
     # Reject questions shorter than length 5
-    if len(words) < 5:
-      continue
-
-    if hasTag(words[0], PERSON_TAG):
-      question = makeWhoQuestion(words, ['Who'])
-      question = cleanQuestion(question)
-      who_questions.append(question)
-    else:
-      against_question = False
-      comma_found = False
-      for i in xrange(len(words)):
-        if hasTag(words[i], '/IN') and hasTag(words[i], '/against'):
-          against_question = True
-        elif hasTag(words[i], '/,') and against_question:
-          question_words = words[i + 1 : ]
-          # TODO(sjoyner): We need to figure out what this word refers to as this is
-          # what the question is about
-          if hasTag(question_words[0], '/PRP'):
-            question_words = question_words[1 : ]
-          question = makeWhoQuestion(question_words, ['Against', 'who', 'did', 'THING'])
-          question = cleanQuestion(question)
-          print question
-          print
-          who_questions.append(question)
-          break
+    if len(words) >= 5:
+      if hasTag(words[0], PERSON_TAG):
+        question = makeWhoQuestion(words, ['Who'])
+        question = cleanQuestion(question)
+        who_questions.append(question)
+      else:
+        against_question = False
+        comma_found = False
+        for i in xrange(len(words)):
+          if hasTag(words[i], '/IN') and hasTag(words[i], '/against'):
+            against_question = True
+          elif hasTag(words[i], '/,') and against_question:
+            question_words = words[i + 1 : ]
+            # TODO(sjoyner): We need to figure out what this word refers to as this is
+            # what the question is about
+            if hasTag(question_words[0], '/PRP'):
+              question_words = question_words[1 : ]
+            question = makeWhoQuestion(question_words, ['Against', 'who', 'did', 'THING'])
+            question = cleanQuestion(question)
+            print question
+            print
+            who_questions.append(question)
+            break
   return who_questions
 
 
@@ -369,37 +387,35 @@ def makeWhenQuestions(sentences):
 
 def findQuoteQuestions(tagged_sentences):
   quote_questions = []
-  root_words = ['say']
+  root_words = ['say', 'comment']
   for sentence in tagged_sentences:
     found_quote = False
-    quote_start_index = -1
+    start_index = -1
     sentence = sentence.strip()
     words = sentence.split()
     for i in range(len(words)):
       if hasTag(words[i], "/``"):
         found_quote = True
-        quote_start_index = i
+        start_index = i
       elif found_quote and hasTag(words[i], "/''"):
-        # We want to remove edge cases like
-        # Clint 'Drew' Dempsey.
-        if (i - quote_start_index > 4):
+#        print "words", words
+        # Entire sentence is a quote, so chances are 
+        # someone said it. We also want to remove edge cases like
+        # Clint 'Drew' Dempsey so length must be greater than 4.
+        if ((start_index == 0 and (i == (len(words) - 1))) or
+           ((i - start_index > 4) and containsKeyRootWords(words, root_words))):
           # There are some quotes we don't want such as
           # what someone's shirt said.
-          if containsKeyRootWords(words, root_words):
-            question_parts = words[quote_start_index + 1 : i] 
-            question_parts = removeTagsFromWords(question_parts)
-            print "parts", question_parts
-            question_parts = removePunctuation(question_parts)
-            print "remove", question_parts
-            question_parts = [words[quote_start_index]] + question_parts + [words[i]]
-            print "quotes", question_parts
-            question_parts = appendQuotes(question_parts)
-            question_parts = ['[QUOTE]', 'Who', 'said'] + question_parts
-            question = putInQuestionFormat(question_parts)       
-            print question
-            print
-            quote_questions.append(question)
-          found_quote = False
+          question_parts = words[start_index + 1 : i] 
+          question_parts = removeTagsFromWords(question_parts)
+          question_parts = removePunctuation(question_parts)
+          question_parts = [words[start_index]] + question_parts + [words[i]]
+          question_parts = appendQuotes(question_parts)
+          question_parts = ['[QUOTE]', 'Who', 'said'] + question_parts
+          question = putInQuestionFormat(question_parts)       
+          quote_questions.append(question)
+          print question
+        found_quote = False
   return quote_questions
 
 ########################
