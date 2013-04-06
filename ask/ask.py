@@ -4,7 +4,7 @@ import argparse, logging, os, sys, string, re, subprocess, ntpath
 from qranker import rank
 from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
-from util import extractEntity
+from util import *
 
 parser = argparse.ArgumentParser(description="Ask")
 parser.add_argument("--txt", help="Original txt file", required="True")
@@ -78,11 +78,23 @@ def condenseWords(question_parts):
       question_parts[i-1] = question_parts[i-1] + word
       question_parts = question_parts[:i] + question_parts[i+1:]
     else:
-      if question_parts[i] == "``":
+      if question_parts[i] == "``" and i != len(question_parts)-1:
         question_parts[i] = question_parts[i] + question_parts[i+1]
         question_parts = question_parts[:i+1] + question_parts[i+2:]
       i+=1
   return question_parts
+
+def retagWords(words, proper_entity_tags):
+  for i in range(len(words)):
+    word_no_tag = removeTag(words[i])
+    for proper_entity in proper_entity_tags:
+      proper_entity_no_tag = removeTag(proper_entity)
+      if word_no_tag == proper_entity_no_tag:
+        old_tag_index = words[i].rfind('/')
+        words[i] = words[i][:old_tag_index]
+        new_tag_index = proper_entity.rfind('/')
+        words[i] = words[i] + proper_entity[new_tag_index:]
+  return words
 
 def removePunctuation(question_parts):
   punctuation = ['.', ',', '?']
@@ -425,18 +437,41 @@ def makeQuoteQuestions(tagged_sentences):
           question_parts = ['[QUOTE]', 'Who', 'said'] + question_parts
           question = putInQuestionFormat(question_parts)       
           quote_questions.append(question)
-          print question
         found_quote = False
   return quote_questions
 
 ########################
 ####### Yes/No #########
 ########################
+def getCoreference(word):
+  index = word.rfind('/')
+  coref = word[index+1:]
+  coref = coref.split('%20')
+  for i in range(len(coref)):
+    coref[i] = coref[i].title() + "//NNP/PERSON/"
+  return coref
 
-def makeYesNoQuestion(tagged_sentences):
+def fixCoreferences(question_parts):
+  i = 0
+  while i != len(question_parts):
+    if hasTag(question_parts[i], PERSON_TAG):
+      break
+    elif hasTag(question_parts[i], '/PRP'):
+      #print question_parts
+      words = getCoreference(question_parts[i])
+      question_parts = question_parts[:i] + words + question_parts[i+1:]
+      i = i + len(words)
+      break
+    else:
+      i += 1
+  return question_parts
+
+def makeYesNoQuestion(tagged_sentences, retag_phrases):
   yes_no_questions = []
   for sentence in tagged_sentences:
     words = sentence.split()
+    words = retagWords(words, retag_phrases)
+    words = fixCoreferences(words)
     for i in xrange(len(words)):
       if hasTag(words[i], "/VB"):
         index = findBeginningOfSegment(words, i)
@@ -463,13 +498,14 @@ def makeYesNoQuestion(tagged_sentences):
                 hasTag(words[0], LOCATION_TAG)):
           words[0] = words[0].lower()
         question_parts= ['[YES]'] + pre_segment + [words[i]] + words[:i] + words[i+1:]
-        #print question_parts
+  #      print question_parts
         question_parts[1] = question_parts[1].title()
         #print "sentence", sentence
         question = putInQuestionFormat(question_parts)
         yes_no_questions.append(question)
         print question
-        print
+  #      print question
+   #     print
         break
   return yes_no_questions
 
@@ -490,13 +526,13 @@ def tagData(file_path):
     # Process the tagged data
     if not os.path.exists('tagged'):
       os.makedirs('tagged')
-    print file_path
+    print "FILE_PATH IS ",file_path
     # Raw text file. Must tag it first (slow!)
     subprocess.check_call(['./tag_data.sh', file_path, \
       "../ask/tagged/", "lemma NER POS"])
     tagged_file_name = ntpath.basename(file_path)
     tagged_file_path = "tagged/" + tagged_file_name[:-4] + ".tag"
-
+  print "DONEEEEEEE\n"
   tagged_file = open(tagged_file_path, 'r')
   sentences = tagged_file.readlines()
   tagged_file.close()
@@ -513,12 +549,13 @@ def cleanQuestion(question):
   return question
 
 def generateQuestions(tagged_sentences, original_file):
+  retag_entities = ["Aries/PERSON", "Segue/PERSON"]
   questions = []
   questions += makeWhoQuestions(tagged_sentences)
   questions += makeWhenQuestions(tagged_sentences)
   questions += makeWhereQuestions(tagged_sentences)
   questions += makeQuoteQuestions(tagged_sentences)
-  questions += makeYesNoQuestion(tagged_sentences)
+  questions += makeYesNoQuestion(tagged_sentences, retag_entities)
   with open(original_file) as f:
     content = f.read()
     generic_questions = makeGenericQuestions(content, tagged_sentences)
@@ -557,13 +594,25 @@ def preprocessFile(file_path):
   preprocess_path = "preprocess-" + file_path
   relative_preprocess_path = "../test_data/" + preprocess_path
   preprocess_text = open(relative_preprocess_path, "w")
+  isSoc = isSoccer(file_text.read())
+  file_text.seek(0)
+  i = 0
   for line in file_text.readlines():
     line = line.strip()
+    if i == 3:
+      for j in range(len(line)):
+        if line[j] == '"':
+          index = line.find('"', j+1)
+          line = line[:j-1] + line[index+1:] 
+          break
+    if line == "See also":
+      break
     if not (line.endswith(".") or line.endswith("!") or
         line.endswith("?") or line == ""):
       line = line + "."
     line = line + "\n"
     preprocess_text.write(line)
+    i+=1
   file_text.close()
   preprocess_text.close()
   return preprocess_path
