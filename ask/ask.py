@@ -503,11 +503,14 @@ def tagData(file_path):
 
 # Final pass over a question to remove unnecessary tags.
 def cleanQuestion(question):
-  # TODO(mburman): a single pass replace might be more efficient.
-  question = question.replace('-LRB- ', '(')
-  question = question.replace(' -RRB-', ')')
-  question = question.replace('--', '-')
-
+  repls = {
+      '-lrb-'  : '(',
+      ' -rrb-' : ')',
+      '--'     : '-',
+      '-LRB-'  : '(',
+      ' -RRB-' : ')'
+  }
+  question = reduce(lambda a, kv: a.replace(*kv), repls.iteritems(), question)
   return question
 
 def generateQuestions(tagged_sentences, original_file):
@@ -525,7 +528,10 @@ def generateQuestions(tagged_sentences, original_file):
     specific_questions = makeSpecificQuestions(content, tagged_sentences)
     questions += specific_questions
 
-  return questions
+  cleaned_questions = []
+  for question in questions:
+    cleaned_questions.append(cleanQuestion(question))
+  return cleaned_questions
 
 def rankQuestions(questions, file_path):
   ranked_questions = rank(questions)
