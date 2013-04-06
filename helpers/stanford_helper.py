@@ -17,11 +17,12 @@ def getTag(line, tag_types):
   for tag_type in tag_types:
     start_tag = '<' + tag_type + '>'
     end_tag = '</' + tag_type + '>'
+    
     if start_tag in line:
       start_index = string.find(line, start_tag) + len(start_tag)
       end_index = string.find(line, end_tag)
       tag = line[start_index : end_index]
-  return '/' + tag
+  return tag
 
 def parseWord(xml_file, tag_types):
   line = xml_file.readline()
@@ -33,14 +34,14 @@ def parseWord(xml_file, tag_types):
       end_index = string.find(line, '</word>')
       word = line[start_index : end_index]
     elif hasTag(line, tag_types):
-      tag += getTag(line, tag_types)
+      tag += '/' + getTag(line, tag_types)
     elif '</token>' in line:
       break
     line = xml_file.readline()
   tagged_word = word + tag
   return (word, tagged_word)
 
-def parseSentence(xml_file, dependencies, tag_types):
+def parseSentence(xml_file, tag_types):
   line = xml_file.readline()
   words = []
   tagged_words = []
@@ -52,9 +53,6 @@ def parseSentence(xml_file, dependencies, tag_types):
     elif '</tokens>' in line:
       tagged_sentence = ' '.join(tagged_words)
       sentence = ' '.join(words)
-    elif '<collapsed-dependencies>' in line:
-      print 'collapsed'
-      getDependencies(xml_file, dependencies, sentence)
     elif '</sentence>' in line:
       break
     line = xml_file.readline()
@@ -65,33 +63,85 @@ def parseLine(line):
   end_index = line.find('<', start_index)
   return line[start_index : end_index]
 
-def getDependencies(xml_file, dependencies, sentence):
+def getIndex(line):
+  start_index = line.find('"') + 1
+  end_index = line.find('"', start_index) 
+  line = line[start_index : end_index]
+  return int(line) - 1
+
+def removeTags(word):
+  index = word.find('/')
+  return word[:index]
+
+def getCoreferences(xml_file, sentences):
+  #print "before",sentence
   line = xml_file.readline()
   dep = []
+  initial_reference = True
+  seen_one_close_coref = False
   while line != '':
-    if '<governor ' in line:
-      governor = parseLine(line)
-    elif '<dependent ' in line:
-      dependent = parseLine(line)
-      depPair = (governor, dependent)
-      dep.append(depPair)
-    elif '</collapsed-dependencies>' in line:
-      dependencies[sentence] = str(dep)
-      break
+    if '<mention representative>' in line:
+      initial_reference = True
+      seen_one_close_coref = False
+    elif '<sentence>' in line:
+      sentence_index = int(getTag(line, ['sentence'])) - 1
+      seen_one_close_coref = False
+    elif '<start>' in line:
+      start_index = int(getTag(line, ['start'])) - 1
+      seen_one_close_coref = False
+    elif '<end>' in line:
+      end_index = int(getTag(line, ['end'])) - 1
+      seen_one_close_coref = False
+    elif '</mention>' in line:
+      if initial_reference == True:
+        #print "REFFEERRRRR"
+        ref_sentence = sentences[sentence_index]
+        #print "ref sentence", ref_sentence
+        #print "start", start_index
+        #print "end", end_index
+        words = ref_sentence.split()
+        reference = words[start_index : end_index]
+        for i in range(len(reference)):
+          reference[i] = removeTags(reference[i])
+        initial_reference = False
+      else:
+        #print reference
+        sentence = sentences[sentence_index]
+        
+        #print sentence
+        #print
+        words = sentence.split()
+        for i in range(start_index, end_index):
+          words[i] = words[i] + "/" + '%20'.join(reference)
+        i#words = words[:start_index] + reference + words[end_index:]
+        sentences[sentence_index] = ' '.join(words)
+      seen_one_close_coref = False
+    elif '</coreference>' in line:
+      if seen_one_close_coref == True:
+        break
+      else:
+        seen_one_close_coref = True
     line = xml_file.readline()
+  #print ' '.join(words)
+  #print sentences
+  return sentences
 
 def parseXMLFile(xml_file, tag_types):
+  print "PARSING"
   line = xml_file.readline()
   sentences = []
-  dependencies = dict()
-  print 'before'
   while line != '':
     if '<sentence id' in line:
-      (sentence, tagged_sentence) = parseSentence(xml_file, dependencies, tag_types)
+      (sentence, tagged_sentence) = parseSentence(xml_file, tag_types)
       sentences.append(tagged_sentence)
       tagged_sentences = '\n'.join(sentences)
+    elif '<coreference>' in line:
+      print "HERE\n"
+      getCoreferences(xml_file, sentences)
     line = xml_file.readline()
   tagged_sentences = '\n'.join(sentences)
+  #for key, val in dependencies.iteritems():
+   # print key, val
   return tagged_sentences
 
 def getFileName(file_path, trunc_ext):
@@ -101,10 +151,6 @@ def getFileName(file_path, trunc_ext):
     return file_path[:-4]
   else:
     return file_path
-
-  print 'dependencies'
-  print dependencies
-  return tagged_sentences
 
 def getOutputFilePath(output_dir, input_path):
   file_name = getFileName(input_path, True)
@@ -134,6 +180,7 @@ if __name__ == '__main__':
 
   xml_file = open(xml_file, 'r')
   tagged_sentences = parseXMLFile(xml_file, tag_types)
+
 
   # For the input file X.txt, generate X.tags
 
