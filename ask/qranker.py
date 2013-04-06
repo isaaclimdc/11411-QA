@@ -1,4 +1,4 @@
-import operator
+import operator, re
 
 # Scores to add to the confidence.
 VERY_BAD_QUESTION = -1000
@@ -27,10 +27,17 @@ def generate_confidence(question):
   if '[specific]' in question:
     return VERY_GOOD_QUESTION - 1
 
+  # Get rid of question label.
+  replace_regex = re.compile('^\[.*\]', re.IGNORECASE)
+  question = replace_regex.sub('', question)
+  question = question.strip()
+
   # Questions shouldn't start with these phrases.
   # If question starts with a bad phrase, lower the rank
   bad_start_phrase = [
-      'who as ', 'who of '
+      'who as ', 'who of ',
+      'did no ', 'did although ', 'did however ', 'did see ',
+      'did follow', 'is no '
   ]
   for bad_phrase in bad_start_phrase:
     bad_index = question.find(bad_phrase)

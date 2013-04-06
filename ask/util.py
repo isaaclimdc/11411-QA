@@ -3,7 +3,7 @@ import re
 
 def extractEntity(content):
   entity = content.split('\n', 1)[0]
-  replace_regex = re.compile('\(programming\ language\)|language|\(film\)', re.IGNORECASE)
+  replace_regex = re.compile('\.|\(programming\ language\)|language|\(film\)', re.IGNORECASE)
   entity = replace_regex.sub('', entity)
   return entity.strip()
 
@@ -26,5 +26,8 @@ def isLanguage(content):
     return True
 
 def isMovie(content):
-  if 'directed' in content:
-    return True
+  movie_signals = ['directed', 'film']
+  if all(x in content for x in movie_signals):
+    extra_signals = ['star', 'played']
+    if any(y in content for y in extra_signals):
+      return True

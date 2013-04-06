@@ -4,7 +4,8 @@ import argparse, logging, os, sys, string, re, subprocess, ntpath
 from qranker import rank
 from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
-from util import *
+from util import extractEntity
+from nltk.corpus import wordnet
 
 parser = argparse.ArgumentParser(description="Ask")
 parser.add_argument("--txt", help="Original txt file", required="True")
@@ -45,7 +46,8 @@ LOCATION_TAG = "/LOCATION"
 DATE_TAG = "/DATE"
 VERB_TAG_1 = "/VBD"
 VERB_TAG_2 = "/VBG"
-
+PRESENT_TENSE = "PRESENT_TENSE"
+PAST_TENSE = "PAST_TENSE"
 
 
 ##############################
@@ -160,7 +162,7 @@ def containsKeyRootWords(words, root_words):
 # In 1902, Bob did this. and the
 # index is in the second half
 # of the sentence, it will find the
-# index Bob is at. 
+# index Bob is at.
 def findBeginningOfSegment(words, i):
   for j in range(i, -1, -1):
     if hasTag(words[j], "/,"):
@@ -179,7 +181,7 @@ def fixTense(word):
 def removeTagsFromWords(question_parts):
  for i in range(len(question_parts)):
     question_parts[i] = removeTag(question_parts[i])
- return question_parts  
+ return question_parts
 
 def putInQuestionFormat(question_parts):
   question_parts = removeTagsFromWords(question_parts)
@@ -189,6 +191,31 @@ def putInQuestionFormat(question_parts):
   question = " ".join(question_parts)
   question = cleanQuestion(question)
   return question
+
+def getHeadVerbTense(question_parts):
+  headVerb = None
+
+  for origWord in question_parts:
+    try:
+      word = en.verb.present(origWord)
+    except:
+      continue
+
+    if en.is_verb(word):
+      headVerb = origWord
+      break
+
+  if headVerb == None:
+    return "NO_HEAD_VERB"
+
+  tense = en.verb.tense(headVerb)
+
+  if "past" in tense:
+    return PAST_TENSE
+  elif "present" in tense or "infinitive" in tense:
+    return PRESENT_TENSE
+  else:
+    return None
 
 
 #############################
@@ -214,7 +241,7 @@ def makeWhoQuestion(words, question_parts):
      # question_parts[len(question_parts)-1] = prev_word + word
     #else:
     question_parts.append(words[j])
-  
+
   if containsKeyRootWords(words, ['star']):
     question_parts[0] = "What"
   #question_parts = question_parts + words
@@ -338,7 +365,7 @@ def makeWhereQuestions(sentences):
 def recClean(parts):
   if len(parts) == 0:
       return parts
-      
+
   firstWord = parts[0]
   lastWord = parts[-1]
   if firstWord == "on" or firstWord == "." or \
@@ -356,18 +383,35 @@ def processWhenQuestion(question_parts):
   question_parts = recClean(question_parts)
 
   # Convert the subject verb to present tense using NodeBox
-  # TODO(idl):A smarter version of this. This only takes
-  # care of 1 case.
-  try:
-    question_parts[1] = en.verb.present(question_parts[1])
-  except:
-    pass
+  for i in xrange (0, len(question_parts)):
+    try:
+      theVerb = en.verb.present(question_parts[i])
+    except:
+      theVerb = None
+      pass
+
+    if theVerb != None:
+      syns = wordnet.synsets(theVerb)
+
+      for s in syns:
+        for l in s.lemmas:
+          # print l.name
+          if l.name != theVerb:
+            theVerb = l.name
+            break
+    try:
+      question_parts[i] = en.verb.present(theVerb)
+    except:
+      pass
 
   question_parts = truncateSentence(question_parts)
 
   # Join everything together.
   question_parts = ["[WHEN]", "When", "did"] + question_parts
   question = putInQuestionFormat(question_parts)
+
+  if len(question_parts) < 4:
+    return None
 
   return question
 
@@ -399,8 +443,10 @@ def makeWhenQuestions(sentences):
           # Extract second half of sentence
           extracted = words[i+1:]
 
+
         question = processWhenQuestion(extracted)
-        when_questions.append(question)
+        if question != None:
+          when_questions.append(question)
 
   return when_questions
 
@@ -422,20 +468,20 @@ def makeQuoteQuestions(tagged_sentences):
         start_index = i
       elif found_quote and hasTag(words[i], "/''"):
 #        print "words", words
-        # Entire sentence is a quote, so chances are 
+        # Entire sentence is a quote, so chances are
         # someone said it. We also want to remove edge cases like
         # Clint 'Drew' Dempsey so length must be greater than 4.
         if ((start_index == 0 and (i == (len(words) - 1))) or
            ((i - start_index > 4) and containsKeyRootWords(words, root_words))):
           # There are some quotes we don't want such as
           # what someone's shirt said.
-          question_parts = words[start_index + 1 : i] 
+          question_parts = words[start_index + 1 : i]
           question_parts = removeTagsFromWords(question_parts)
           question_parts = removePunctuation(question_parts)
           question_parts = [words[start_index]] + question_parts + [words[i]]
           question_parts = appendQuotes(question_parts)
           question_parts = ['[QUOTE]', 'Who', 'said'] + question_parts
-          question = putInQuestionFormat(question_parts)       
+          question = putInQuestionFormat(question_parts)
           quote_questions.append(question)
         found_quote = False
   return quote_questions
@@ -493,7 +539,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
             if hasTag(words[j], "/VB"):
               words[j] = fixTense(words[j])
               break
-        if not (hasTag(words[0], PERSON_TAG) or 
+        if not (hasTag(words[0], PERSON_TAG) or
                 hasTag(words[0], ORGANIZATION_TAG) or
                 hasTag(words[0], LOCATION_TAG)):
           words[0] = words[0].lower()
@@ -503,9 +549,6 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
         #print "sentence", sentence
         question = putInQuestionFormat(question_parts)
         yes_no_questions.append(question)
-        print question
-  #      print question
-   #     print
         break
   return yes_no_questions
 
@@ -536,16 +579,20 @@ def tagData(file_path):
   tagged_file = open(tagged_file_path, 'r')
   sentences = tagged_file.readlines()
   tagged_file.close()
+  subprocess.check_call(['rm', '-rf', '../helpers/tmp'])
 
   return sentences
 
 # Final pass over a question to remove unnecessary tags.
 def cleanQuestion(question):
-  # TODO(mburman): a single pass replace might be more efficient.
-  question = question.replace('-LRB- ', '(')
-  question = question.replace(' -RRB-', ')')
-  question = question.replace('--', '-')
-
+  repls = {
+      '-lrb-'  : '(',
+      ' -rrb-' : ')',
+      '--'     : '-',
+      '-LRB-'  : '(',
+      ' -RRB-' : ')'
+  }
+  question = reduce(lambda a, kv: a.replace(*kv), repls.iteritems(), question)
   return question
 
 def generateQuestions(tagged_sentences, original_file):
@@ -564,7 +611,10 @@ def generateQuestions(tagged_sentences, original_file):
     specific_questions = makeSpecificQuestions(content, tagged_sentences)
     questions += specific_questions
 
-  return questions
+  cleaned_questions = []
+  for question in questions:
+    cleaned_questions.append(cleanQuestion(question))
+  return cleaned_questions
 
 def rankQuestions(questions, file_path):
   ranked_questions = rank(questions)
@@ -611,6 +661,9 @@ def preprocessFile(file_path):
         line.endswith("?") or line == ""):
       line = line + "."
     line = line + "\n"
+    # Remove everything after See also.'
+    if line == 'See also.\n':
+      break
     preprocess_text.write(line)
     i+=1
   file_text.close()
@@ -620,13 +673,10 @@ def preprocessFile(file_path):
 # TODO(mburman): use the logging module instead of prints
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
-  file_path = args.txt
-  
+  file_path = preprocessFile(args.txt)
   original_file = '../test_data/' + file_path
   if args.tagged:
     file_path = args.tagged
-  else:
-    file_path = preprocessFile(file_path)
 
   print "~ Tagging data..."
   tagged_sentences = tagData(file_path)
