@@ -4,7 +4,7 @@ import argparse, logging, os, sys, string, re, subprocess, ntpath
 from qranker import rank
 from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
-from util import extractEntity
+from util import *
 from nltk.corpus import wordnet
 
 parser = argparse.ArgumentParser(description="Ask")
@@ -653,7 +653,7 @@ def preprocessFile(file_path):
       for j in range(len(line)):
         if line[j] == '"':
           index = line.find('"', j+1)
-          line = line[:j-1] + line[index+1:] 
+          line = line[:j-1] + line[index+1:]
           break
     if line == "See also":
       break
