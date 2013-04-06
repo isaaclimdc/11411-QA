@@ -6,6 +6,7 @@ libraries/*
 ask/questions/*
 ask/tagged/*
 ask/rank/*
+test_data/*
 
 #Misc stuff
 .DS_Store
