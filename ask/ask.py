@@ -385,7 +385,7 @@ def makeWhenQuestions(sentences):
 ######### Quote Questions ################
 ##########################################
 
-def findQuoteQuestions(tagged_sentences):
+def makeQuoteQuestions(tagged_sentences):
   quote_questions = []
   root_words = ['say', 'comment']
   for sentence in tagged_sentences:
@@ -417,6 +417,45 @@ def findQuoteQuestions(tagged_sentences):
           print question
         found_quote = False
   return quote_questions
+
+########################
+####### Yes/No #########
+########################
+
+def makeYesNoQuestion(tagged_sentences):
+  yes_no_questions = []
+  for sentence in tagged_sentences:
+    words = sentence.split()
+    for i in range(len(words)):
+      if hasTag(words[i], "/VB"):
+        if hasRootWord(words[i], "be"):
+          if hasTag(words[i-1], "/MD"):
+            temp = words[i]
+            words[i] = words[i-1]
+            words[i-1] = temp
+        else:
+          if (hasTag(words[i], "/VBZ") or
+              hasTag(words[i], "/VBP")):
+            words[i] = "Did"
+          else:
+            words = words[:i] + ["Did"] + words[i:]
+          for j in range(i+1,len(words)):
+            if hasTag(words[j], "/VB"):
+              words[j] = fixTense(words[j])
+              break
+        words[i] = words[i].title()
+        if not (hasTag(words[0], PERSON_TAG) or 
+                hasTag(words[0], ORGANIZATION_TAG) or
+                hasTag(words[0], LOCATION_TAG)):
+          words[0] = words[0].lower()
+        question_parts= ['[YES]', words[i]] + words[:i] + words[i+1:]
+        #print "sentence", sentence
+        question = putInQuestionFormat(question_parts)
+        yes_no_questions.append(question)
+        #print question
+        #print
+        break
+  return yes_no_questions
 
 ########################
 ###### Procedural ######
@@ -462,7 +501,8 @@ def generateQuestions(tagged_sentences, original_file):
   questions += makeWhoQuestions(tagged_sentences)
   questions += makeWhenQuestions(tagged_sentences)
   questions += makeWhereQuestions(tagged_sentences)
-  questions += findQuoteQuestions(tagged_sentences)
+  questions += makeQuoteQuestions(tagged_sentences)
+  questions += makeYesNoQuestion(tagged_sentences)
   with open(original_file) as f:
     content = f.read()
     generic_questions = makeGenericQuestions(content, tagged_sentences)
