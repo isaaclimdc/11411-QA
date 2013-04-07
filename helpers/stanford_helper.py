@@ -74,48 +74,66 @@ def removeTags(word):
   return word[:index]
 
 def getCoreferences(xml_file, sentences):
-  #print "before",sentence
+  print "BLAH"
+  #print "before",sentences
   line = xml_file.readline()
   dep = []
   initial_reference = True
   seen_one_close_coref = False
   while line != '':
-    if '<mention representative>' in line:
+    if '<mention representative="true">' in line:
       initial_reference = True
-      seen_one_close_coref = False
     elif '<sentence>' in line:
       sentence_index = int(getTag(line, ['sentence'])) - 1
-      seen_one_close_coref = False
     elif '<start>' in line:
       start_index = int(getTag(line, ['start'])) - 1
-      seen_one_close_coref = False
     elif '<end>' in line:
       end_index = int(getTag(line, ['end'])) - 1
-      seen_one_close_coref = False
-    elif '</mention>' in line:
       if initial_reference == True:
-        #print "REFFEERRRRR"
         ref_sentence = sentences[sentence_index]
-        #print "ref sentence", ref_sentence
-        #print "start", start_index
-        #print "end", end_index
         words = ref_sentence.split()
         reference = words[start_index : end_index]
+        i = 0
+        comma_index = -1
+        second_comma_found = False
+        while i < len(reference):
+          if '/,' in reference[i] and comma_index == -1:
+            comma_index = i
+          elif '/,' in reference[i] and not second_comma_found:
+            second_comma_found = True
+          elif '/,' in reference[i]:
+            reference = reference[:comma_index] + reference[i+1:]
+            break
+          i+=1
         for i in range(len(reference)):
           reference[i] = removeTags(reference[i])
-        initial_reference = False
-      else:
-        #print reference
-        sentence = sentences[sentence_index]
+      #seen_one_close_coref = False
+   # elif '</mention>' in line:
+      #if initial_reference == True:
+       ## print "REFFEERRRRR"
+        #ref_sentence = sentences[sentence_index]
+        #print "ref sentence", ref_sentence
+        ##print "start", start_index
+        #print "end", end_index
+        #words = ref_sentence.split()
+        #reference = words[start_index : end_index]
+        #for i in range(len(reference)):
+        #  reference[i] = removeTags(reference[i])
+        #initial_reference = False
+    elif '</mention>' in line:
+        if initial_reference == False:
+          print reference
+          sentence = sentences[sentence_index]
         
-        #print sentence
-        #print
-        words = sentence.split()
-        for i in range(start_index, end_index):
-          words[i] = words[i] + "/" + '%20'.join(reference)
-        i#words = words[:start_index] + reference + words[end_index:]
-        sentences[sentence_index] = ' '.join(words)
-      seen_one_close_coref = False
+          print sentence
+          words = sentence.split()
+          for i in range(start_index, end_index):
+            words[i] = words[i] + "/" + '%20'.join(reference)
+          sentences[sentence_index] = ' '.join(words)
+          print sentences[sentence_index]
+        else:
+          initial_reference = False
+        seen_one_close_coref = False
     elif '</coreference>' in line:
       if seen_one_close_coref == True:
         break

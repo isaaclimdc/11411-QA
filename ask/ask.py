@@ -490,11 +490,19 @@ def makeQuoteQuestions(tagged_sentences):
 ####### Yes/No #########
 ########################
 def getCoreference(word):
-  index = word.rfind('/')
-  coref = word[index+1:]
-  coref = coref.split('%20')
-  for i in range(len(coref)):
-    coref[i] = coref[i].title() + "//NNP/PERSON/"
+  print word
+  index = -1
+  for i in range(4):
+    index = word.find('/', index+1)
+    if index == -1:
+      break
+  if index != -1:
+    coref = word[index+1:]
+    coref = coref.split('%20')
+    for i in range(len(coref)):
+      coref[i] = coref[i].title() + "/NNP/PERSON/"
+  else:
+    coref = [word]
   return coref
 
 def fixCoreferences(question_parts):
@@ -502,8 +510,7 @@ def fixCoreferences(question_parts):
   while i != len(question_parts):
     if hasTag(question_parts[i], PERSON_TAG):
       break
-    elif hasTag(question_parts[i], '/PRP'):
-      #print question_parts
+    elif hasTag(question_parts[i], '/PRP'):# and removeTag(question_parts[i]) != "it":
       words = getCoreference(question_parts[i])
       question_parts = question_parts[:i] + words + question_parts[i+1:]
       i = i + len(words)
@@ -654,6 +661,17 @@ def preprocessFile(file_path):
           index = line.find('"', j+1)
           line = line[:j-1] + line[index+1:]
           break
+      words = line.split()
+      j = 0
+#      print line
+      for j in range(len(words)):
+        if words[j].startswith('('):
+          words[j-1] = words[j-1] + ','
+          words[j] = words[j][1:]
+        elif words[j].endswith(')'):
+          words[j] = words[j][:len(words[j])-1] + ','
+      line = ' '.join(words)
+ #     print line
     if line == "See also":
       break
     if not (line.endswith(".") or line.endswith("!") or
