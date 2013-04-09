@@ -5,7 +5,11 @@ from qranker import rank
 from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
 from util import *
-from nltk.corpus import wordnet
+
+# try:
+#   from nltk.corpus import wordnet
+# except:
+#   checkDependencies(False)
 
 parser = argparse.ArgumentParser(description="Ask")
 parser.add_argument("--txt", help="Original txt file", required="True")
@@ -16,12 +20,13 @@ parser.add_argument("--tagged", help="Corresponding tagged file. Adding this \
 args = parser.parse_args()
 
 # Check dependencies
-def checkDependencies():
-  if os.path.isdir("../libraries/en") and \
-     os.path.isdir("../libraries/stanford-corenlp"):
+def checkDependencies(satis):
+  if satis and \
+    os.path.isdir("../libraries/en") and \
+    os.path.isdir("../libraries/stanford-corenlp"):
     return
   else:
-    print "Dependencies not installed.\nRun cd.. then ./dep.sh"
+    print "Dependencies not installed.\nRun ./dep.sh"
     sys.exit(0)
 
 if len(sys.argv) < 2:
@@ -29,11 +34,11 @@ if len(sys.argv) < 2:
   sys.exit(0)
 
 print "~ Importing required libraries..."
-checkDependencies()
+checkDependencies(True)
 lib_path = os.path.abspath('../libraries')
 sys.path.append(lib_path)
 
-from nltk_helper import splitIntoSentences2, getSynonyms
+# from nltk_helper import splitIntoSentences2, getSynonyms
 import en
 print "~ DONE!\n"
 
@@ -388,18 +393,17 @@ def processWhenQuestion(question_parts):
     try:
       theVerb = en.verb.present(question_parts[i])
     except:
-      theVerb = None
       pass
 
-    if theVerb != None:
-      syns = wordnet.synsets(theVerb)
+    # if theVerb != None:
+    #   syns = wordnet.synsets(theVerb)
 
-      for s in syns:
-        for l in s.lemmas:
-          # print l.name
-          if l.name != theVerb:
-            theVerb = l.name
-            break
+    #   for s in syns:
+    #     for l in s.lemmas:
+    #       # print l.name
+    #       if l.name != theVerb:
+    #         theVerb = l.name
+    #         break
     try:
       question_parts[i] = en.verb.present(theVerb)
     except:
