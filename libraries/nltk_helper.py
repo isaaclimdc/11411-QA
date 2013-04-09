@@ -23,7 +23,7 @@ def splitIntoSentences2(file_name):
   for para in data.split('\n'):
     if para:
       sentences.extend(sentence_splitter.tokenize(para))
-  print '\n-----\n'.join(sentences)
+  # print '\n-----\n'.join(sentences)
   return sentences
 
 def printSynonyms(word):
