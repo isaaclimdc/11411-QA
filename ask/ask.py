@@ -9,6 +9,7 @@ from nltk.corpus import wordnet
 
 parser = argparse.ArgumentParser(description="Ask")
 parser.add_argument("--txt", help="Original txt file", required="True")
+parser.add_argument("--N", help="No. of questions", required="True")
 parser.add_argument("--tagged", help="Corresponding tagged file. Adding this \
     will drastically reduce runtime. Otherwise a tagged file is generated \
     from the txt file.")
@@ -20,7 +21,7 @@ def checkDependencies():
      os.path.isdir("../libraries/stanford-corenlp"):
     return
   else:
-    print "Dependencies not installed.\nRun cd.. then ./build_dependencies.sh"
+    print "Dependencies not installed.\nRun cd.. then ./dep.sh"
     sys.exit(0)
 
 if len(sys.argv) < 2:
@@ -695,16 +696,20 @@ if __name__ == '__main__':
   if args.tagged:
     file_path = args.tagged
 
-  print "~ Tagging data..."
+  Nqns = int(args.N)
+
+  print "~ Tagging data..."+str(Nqns)
   tagged_sentences = tagData(file_path)
   print "~ DONE!\n"
 
   print "~ Generating Questions..."
   questions = generateQuestions(tagged_sentences, original_file)
+  questions = questions[:Nqns]
   print "~ DONE!\n"
 
   print "~ Ranking questions..."
   ranked_questions = rankQuestions(questions, file_path)
+  # ranked_questions = ranked_questions[:Nqns]
   print "~ DONE!\n"
 
   print "~ Writing questions to file..."

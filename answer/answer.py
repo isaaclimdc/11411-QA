@@ -177,9 +177,9 @@ def makeSentenceArray(inputFile):
   f.close()
   return sentences
 
-def computeDistances(questionFile, answerFile):
+def computeDistances(articleFile, questionFile):
   global glob_syn_dict
-  answerArray = splitIntoSentences2(answerFile)
+  answerArray = splitIntoSentences2(articleFile)
   questionArray = makeSentenceArray(questionFile)
   
   for question in questionArray:
@@ -188,10 +188,10 @@ def computeDistances(questionFile, answerFile):
 
     # Find synonyms for words in question.
     question_words = question_edited.split()
-    print question_words
+    # print question_words
     for word in question_words:
       glob_syn_dict[word] = getSynonyms(word)
-    print 'Synonym Dict \n', glob_syn_dict
+    # print 'Synonym Dict \n', glob_syn_dict
 
     # Compute best answer.
     closestAnswer = ""
@@ -203,11 +203,14 @@ def computeDistances(questionFile, answerFile):
       count = damerauDistance(splitSentence(question_edited), splitSentence(answer_edited), memo)
 
       if (count < sentenceDistance):
-            closestSentence = answer
-            sentenceDistance = count
-    print "\n ------- \n Question sentence: " + question
+        closestSentence = answer
+        sentenceDistance = count
+
+    print "\n-------"
+    print "Question sentence: " + question
     print "Answer sentence: " + closestSentence
-    print "Damerau distance: " + str(sentenceDistance) + "\n ------- \n"
+    print "Damerau distance: " + str(sentenceDistance)
+    print "-------\n"
 
     # Reset synonym dict.
     glob_syn_dict = dict()
@@ -216,8 +219,7 @@ def computeDistances(questionFile, answerFile):
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
   if len(sys.argv) < 3:
-    print 'Usage: ' + \
-        './answer.py <question_file> <answer_file>\n'
+    print 'Usage: ./answer.py <article_text> <questions_text>\n'
     sys.exit(0)
 
   computeDistances(sys.argv[1], sys.argv[2])
