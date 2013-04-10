@@ -19,6 +19,16 @@ level of the project directory. This project requires:
 
 All the above dependencies can be installed by simply running `./dep.sh` at the root of the project directory. The dependencies will be downloaded and installed into the `libraries` directory.
 
+Also
+
+a) We require python 2.7
+b) We require pythons nltk toolkit
+To get this first make sure nltk is installed 
+Then go into a python shell and type
+>>> import nltk
+>>> nltk.download()
+  Install everything
+
 Ask
 ---
 `./ask.py <article.txt> <N>`
