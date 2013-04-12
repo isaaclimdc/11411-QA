@@ -74,7 +74,6 @@ def removeTags(word):
   return word[:index]
 
 def getCoreferences(xml_file, sentences):
-  print "BLAH"
   #print "before",sentences
   line = xml_file.readline()
   dep = []
@@ -122,15 +121,12 @@ def getCoreferences(xml_file, sentences):
         #initial_reference = False
     elif '</mention>' in line:
         if initial_reference == False:
-          print reference
           sentence = sentences[sentence_index]
         
-          print sentence
           words = sentence.split()
           for i in range(start_index, end_index):
             words[i] = words[i] + "/" + '%20'.join(reference)
           sentences[sentence_index] = ' '.join(words)
-          print sentences[sentence_index]
         else:
           initial_reference = False
         seen_one_close_coref = False
@@ -145,7 +141,6 @@ def getCoreferences(xml_file, sentences):
   return sentences
 
 def parseXMLFile(xml_file, tag_types):
-  print "PARSING"
   line = xml_file.readline()
   sentences = []
   while line != '':
@@ -154,7 +149,6 @@ def parseXMLFile(xml_file, tag_types):
       sentences.append(tagged_sentence)
       tagged_sentences = '\n'.join(sentences)
     elif '<coreference>' in line:
-      print "HERE\n"
       getCoreferences(xml_file, sentences)
     line = xml_file.readline()
   tagged_sentences = '\n'.join(sentences)

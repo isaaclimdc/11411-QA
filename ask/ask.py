@@ -1,10 +1,11 @@
 #!/usr/local/bin/python
 
-import argparse, logging, os, sys, string, re, subprocess, ntpath
+import argparse, logging, os, sys, string, re, subprocess, ntpath, nltk.data
 from qranker import rank
 from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
 from util import *
+
 
 # try:
 #   from nltk.corpus import wordnet
@@ -495,7 +496,6 @@ def makeQuoteQuestions(tagged_sentences):
 ####### Yes/No #########
 ########################
 def getCoreference(word):
-  print word
   index = -1
   for i in range(4):
     index = word.find('/', index+1)
@@ -507,7 +507,7 @@ def getCoreference(word):
     for i in range(len(coref)):
       coref[i] = coref[i].title() + "/NNP/PERSON/"
   else:
-    coref = [word]
+    coref = []
   return coref
 
 def fixCoreferences(question_parts):
@@ -517,8 +517,11 @@ def fixCoreferences(question_parts):
       break
     elif hasTag(question_parts[i], '/PRP'):# and removeTag(question_parts[i]) != "it":
       words = getCoreference(question_parts[i])
-      question_parts = question_parts[:i] + words + question_parts[i+1:]
-      i = i + len(words)
+      if len(words) != 0:
+        question_parts = question_parts[:i] + words + question_parts[i+1:]
+        i = i + len(words)
+      else:
+        question_parts = []
       break
     else:
       i += 1
@@ -529,13 +532,21 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
   for sentence in tagged_sentences:
     words = sentence.split()
     words = retagWords(words, retag_phrases)
+    # If there is a pronoun before a reference to a
+    # person, we want to change that pronoun to 
+    # the actual person. If we cannot find a reference
+    # the length of the returned word array will be
+    # zero and we will move on to the next sentence.
     words = fixCoreferences(words)
     for i in xrange(len(words)):
+      # Can make a yes/no question by moving verb
+      # to the beginning of the sentence.
       if hasTag(words[i], "/VB"):
         index = findBeginningOfSegment(words, i)
         pre_segment = words[:index]
         words = words[index:]
         i = i - index
+        # Weird edge case
         if hasRootWord(words[i], "be"):
           if hasTag(words[i-1], "/MD"):
             temp = words[i]
@@ -555,13 +566,11 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
                 hasTag(words[0], ORGANIZATION_TAG) or
                 hasTag(words[0], LOCATION_TAG)):
           words[0] = words[0].lower()
+        
         question_parts= ['[YES]'] + pre_segment + [words[i]] + words[:i] + words[i+1:]
-  #      print question_parts
         question_parts[1] = question_parts[1].title()
-        #print "sentence", sentence
         question = putInQuestionFormat(question_parts)
         yes_no_questions.append(question)
-        print question
         break
   return yes_no_questions
 
@@ -658,36 +667,83 @@ def preprocessFile(file_path):
   isSoc = isSoccer(file_text.read())
   file_text.seek(0)
   i = 0
+  sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
+  done = False
   for line in file_text.readlines():
-    line = line.strip()
-    if i == 3:
-      for j in range(len(line)):
-        if line[j] == '"':
-          index = line.find('"', j+1)
-          line = line[:j-1] + line[index+1:]
+    if done == True:
+      break
+    sentences = sent_detector.tokenize(line)
+    strip_sentences = []
+    for sentence in sentences:
+      strip_sentence = sentence.strip()
+      words = strip_sentence.split()
+      if len(words) < 20:
+        # We don't want to include the reference section
+        if strip_sentence == "See also":
+          done = True
           break
+        # If the sentence doesn't end with a period or
+        # another form of ending sentence punctuation,
+        # it is most likely a header and we want to add
+        # punctuation to distinguish the header from the
+        # next sentence
+        if not ((strip_sentence.endswith(".") or 
+                strip_sentence.endswith("!") or
+                strip_sentence.endswith("?")) 
+                and strip_sentence != ""):
+          strip_sentence = strip_sentence + "."
+        strip_sentences.append(strip_sentence)
+    line = ' '.join(strip_sentences) + '\n'
+    # This is the first sentence in the article that
+    # contains the birthdate information for soccer 
+    # players. To make sure the date gets parsed correctly
+    # we change the parentheses to commas.
+    if i == 3 and isSoc:
+      # Weird formatting in Beckham....
+      comma_index = line.find(',')
+      if comma_index != -1:
+        line = line[:comma_index] + line[comma_index+1:]
+      obe_index = line.find('OBE')
+      if obe_index != -1:
+        line = line[:obe_index] + line[obe_index + len('OBE'):]
       words = line.split()
-      j = 0
-#      print line
+      born_start_index = -1
+      born_end_index = -1
       for j in range(len(words)):
         if words[j].startswith('('):
-          words[j-1] = words[j-1] + ','
           words[j] = words[j][1:]
+          born_start_index = j
         elif words[j].endswith(')'):
-          words[j] = words[j][:len(words[j])-1] + ','
-      line = ' '.join(words)
- #     print line
-    if line == "See also":
-      break
-    if not (line.endswith(".") or line.endswith("!") or
-        line.endswith("?") or line == ""):
-      line = line + "."
-    line = line + "\n"
-    # Remove everything after See also.'
-    if line == 'See also.\n':
-      break
+          words[j] = words[j][:len(words[j])-1]
+          born_end_index = j + 1
+      intro_sentence = words[0:born_start_index] + words[born_end_index:]
+      born_sentence = words[0:born_start_index] + ['was'] + words[born_start_index : born_end_index]
+      born_sentence[len(born_sentence)-1] = born_sentence[len(born_sentence)-1] + '.'
+      line = ' '.join(intro_sentence + born_sentence)
     preprocess_text.write(line)
-    i+=1
+    i += 1
+    #  for j in range(len(line)):
+    #    if line[j] == '"':
+    #      index = line.find('"', j+1)
+    #      line = line[:j-1] + line[index+1:]
+    #      break
+    #  words = line.split()
+    #  j = 0
+#      print line
+    #  for j in range(len(words)):
+    #    if words[j].startswith('('):
+    #      words[j-1] = words[j-1] + ','
+    #      words[j] = words[j][1:]
+    #    elif words[j].endswith(')'):
+    #      words[j] = words[j][:len(words[j])-1] + ','
+    #  line = ' '.join(words)
+    #if line == "See also":
+    #  break
+   # Remove everything after See also.'
+    #if line == 'See also.\n':
+    #  break
+    #preprocess_text.write(line)
+    #i+=1
   file_text.close()
   preprocess_text.close()
   return preprocess_path
