@@ -826,16 +826,16 @@ if __name__ == '__main__':
 
   log("~ Generating Questions...")
   questions = generateQuestions(tagged_sentences, original_file)
-  questions = questions[:Nqns]
   log("~ DONE!\n")
 
   log("~ Ranking questions...")
   ranked_questions = rankQuestions(questions, file_path)
+  best_questions = ranked_questions[:Nqns]
   # ranked_questions = ranked_questions[:Nqns]
   log("~ DONE!\n")
 
   log("~ Printing questions to stdout...")
-  printQuestions(questions)
+  printQuestions(best_questions)
   log("~ DONE!\n")
 
   # log("~ Writing questions to file...")
