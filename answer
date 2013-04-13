@@ -10,4 +10,4 @@ then
 fi
 
 cd answer_files
-./answer.py ../$1 ../$2
+python answer.py ../$1 ../$2
