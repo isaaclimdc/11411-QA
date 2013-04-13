@@ -1,11 +1,19 @@
 #!/usr/local/bin/python
 
-import argparse, logging, os, sys, string, re, subprocess, ntpath, nltk.data
+import argparse, os, sys, string, re, subprocess, ntpath, nltk.data
 from qranker import rank
 from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
 from util import *
 
+# Toggle debug logs
+DDEBUG = False
+
+def log(s=""):
+  if DDEBUG:
+    print s
+  else:
+    sys.stderr.write(s + "\n")
 
 # try:
 #   from nltk.corpus import wordnet
@@ -27,21 +35,21 @@ def checkDependencies(satis):
     os.path.isdir("../libraries/stanford-corenlp"):
     return
   else:
-    print "Dependencies not installed.\nRun ./dep.sh"
+    print("Dependencies not installed.\nRun ./dep.sh")
     sys.exit(0)
 
 if len(sys.argv) < 2:
   print 'Usage: ./ask.py <article_file>\n'
   sys.exit(0)
 
-print "~ Importing required libraries..."
+log("~ Importing required libraries...")
 checkDependencies(True)
 lib_path = os.path.abspath('../libraries')
 sys.path.append(lib_path)
 
 # from nltk_helper import splitIntoSentences2, getSynonyms
 import en
-print "~ DONE!\n"
+log("~ DONE!\n")
 
 #######################
 ###### Constants ######
@@ -308,8 +316,7 @@ def makeWhoQuestions(sentences):
               question_words = question_words[1 : ]
             question = makeWhoQuestion(question_words, ['Against', 'who', 'did', 'THING'])
             question = cleanQuestion(question)
-            print question
-            print
+            log(question)
             who_questions.append(question)
             break
   return who_questions
@@ -416,25 +423,29 @@ def processWhenQuestion(question_parts):
   question_parts = recClean(question_parts)
 
   # Convert the subject verb to present tense using NodeBox
-  for i in xrange (0, len(question_parts)):
-    try:
-      theVerb = en.verb.present(question_parts[i])
-    except:
-      pass
+  try:
+    question_parts[1] = en.verb.present(question_parts[1])
+  except:
+    pass
+  # for i in xrange (0, len(question_parts)):
+  #   try:
+  #     theVerb = en.verb.present(question_parts[i])
+  #   except:
+  #     pass
 
-    # if theVerb != None:
-    #   syns = wordnet.synsets(theVerb)
+  #   # if theVerb != None:
+  #   #   syns = wordnet.synsets(theVerb)
 
-    #   for s in syns:
-    #     for l in s.lemmas:
-    #       # print l.name
-    #       if l.name != theVerb:
-    #         theVerb = l.name
-    #         break
-    try:
-      question_parts[i] = en.verb.present(theVerb)
-    except:
-      pass
+  #   #   for s in syns:
+  #   #     for l in s.lemmas:
+  #   #       # log(l.name)
+  #   #       if l.name != theVerb:
+  #   #         theVerb = l.name
+  #   #         break
+  #   try:
+  #     question_parts[i] = en.verb.present(theVerb)
+  #   except:
+  #     pass
 
   question_parts = truncateSentence(question_parts)
 
@@ -505,7 +516,7 @@ def makeQuoteQuestions(tagged_sentences):
         found_quote = True
         start_index = i
       elif found_quote and hasTag(words[i], "/''"):
-#        print "words", words
+#        log "words", words
         # Entire sentence is a quote, so chances are
         # someone said it. We also want to remove edge cases like
         # Clint 'Drew' Dempsey so length must be greater than 4.
@@ -579,7 +590,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
     # the length of the returned word array will be
     # zero and we will move on to the next sentence.
     words = fixCoreferences(words)
-    #print "orig sentence ", sentence   
+    #log "orig sentence ", sentence   
     for i in xrange(len(words)):
       if i == 0:
         # This is for cases like Having missed the World Cup,
@@ -620,8 +631,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
           
           question_parts[1] = question_parts[1].title()
           question = putInQuestionFormat(question_parts)
-          print "question ", question
-          print
+          log("question " + question)
           yes_no_questions.append(question)
           break
   return yes_no_questions
@@ -699,6 +709,11 @@ def rankQuestions(questions, file_path):
   rank_file.close()
 
   return ranked_questions
+
+# Print questions to stdout
+def printQuestions(questions):
+  for question in questions:
+    print question
 
 # Write questions to file.
 def writeQuestions(questions, file_path):
@@ -783,7 +798,7 @@ def preprocessFile(file_path):
     #      break
     #  words = line.split()
     #  j = 0
-#      print line
+#      log line
     #  for j in range(len(words)):
     #    if words[j].startswith('('):
     #      words[j-1] = words[j-1] + ','
@@ -802,8 +817,6 @@ def preprocessFile(file_path):
   preprocess_text.close()
   return preprocess_path
 
-# TODO(mburman): use the logging module instead of prints
-# TODO(mburman): let user specify logging level
 if __name__ == '__main__':
   file_path = preprocessFile(args.txt)
   original_file = file_path
@@ -812,22 +825,26 @@ if __name__ == '__main__':
 
   Nqns = int(args.N)
 
-  print "~ Tagging data..."+str(Nqns)
+  log("~ Tagging data...")
   tagged_sentences = tagData(file_path)
-  print "~ DONE!\n"
+  log("~ DONE!\n")
 
-  print "~ Generating Questions..."
+  log("~ Generating Questions...")
   questions = generateQuestions(tagged_sentences, original_file)
   questions = questions[:Nqns]
-  print "~ DONE!\n"
+  log("~ DONE!\n")
 
-  print "~ Ranking questions..."
+  log("~ Ranking questions...")
   ranked_questions = rankQuestions(questions, file_path)
   # ranked_questions = ranked_questions[:Nqns]
-  print "~ DONE!\n"
+  log("~ DONE!\n")
 
-  print "~ Writing questions to file..."
-  writeQuestions(questions, file_path)
-  print "~ DONE!\n"
+  log("~ Printing questions to stdout...")
+  printQuestions(questions)
+  log("~ DONE!\n")
+
+  # log("~ Writing questions to file...")
+  # writeQuestions(questions, file_path)
+  # log("~ DONE!\n")
 
   #END

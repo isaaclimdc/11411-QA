@@ -5,6 +5,16 @@
 # 'Who directed (...)?' is a valid question.
 
 from util import *
+import os, sys
+
+# Toggle debug logs
+DDEBUG = False
+
+def log(s=""):
+  if DDEBUG:
+    print s
+  else:
+    sys.stderr.write(s + "\n")
 
 # Generic questions for each type of file we get.
 generic_soccer = [
@@ -51,7 +61,7 @@ def makeGenericQuestions(content, tagged_sentences):
   if not entity:
     return to_return
 
-  print "~ Entity: " + entity
+  log("~ Entity: " + entity)
   if isSoccer(content):
     for question in generic_soccer:
       question = question.replace('[ENTITY]', entity)
@@ -81,5 +91,3 @@ def makeGenericQuestions(content, tagged_sentences):
       question = question.replace('[ENTITY]', entity)
       to_return.append('[GENERIC]' + question)
     return to_return
-
-

@@ -2,6 +2,13 @@
 
 import string, sys, subprocess, ntpath, os
 
+# Toggle debug logs
+DDEBUG = False
+
+def log(s=""):
+  if DDEBUG:
+    print s
+
 POSITION = 'POS'
 NAMED_ENTITY = 'NER'
 ROOT = 'lemma'

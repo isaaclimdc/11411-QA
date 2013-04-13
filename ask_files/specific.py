@@ -5,6 +5,16 @@
 # certain character.
 
 from util import *
+import os, sys
+
+# Toggle debug logs
+DDEBUG = False
+
+def log(s=""):
+  if DDEBUG:
+    print s
+  else:
+    sys.stderr.write(s + "\n")
 
 def generateSoccerQuestions(content, tagged_sentences):
   return []
@@ -17,10 +27,10 @@ def generateMovieQuestions(content, tagged_sentences):
   cast = content[cast_begin:cast_end]
   cast_lines = cast.split('\n')
   for item in cast_lines:
-    print item
+    log(item)
     if ' as ' in item:
       entity = item.split(' as ', 1)[0].strip()
-      print "entity " + entity
+      log("entity " + entity)
       question = "[SPECIFIC] Who did " + entity + " play?"
       to_return.append(question)
   return to_return

@@ -1,5 +1,7 @@
 #!/bin/sh
 
-echo '~ Cleaning up tmp files...'
+echoerr() { echo "$@" 1>&2; }
+
+echoerr '~ Cleaning up tmp files...'
 rm -rf tmp
-echo '~ DONE!\n'
+echoerr '~ DONE!\n'
