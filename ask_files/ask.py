@@ -358,7 +358,7 @@ def makeWhereQuestions(sentences):
     sentence = sentence.strip()
     if isHeader(sentence):
       continue
-   
+
     words = sentence.split()
 
     words = truncateSentence(words)
@@ -464,7 +464,7 @@ def makeWhenQuestions(sentences):
     sentence = sentence.strip()
     if isHeader(sentence):
       continue
-   
+
     words = sentence.split()
     n = len(words)
 
@@ -501,7 +501,7 @@ def makeQuoteQuestions(tagged_sentences):
   for sentence in tagged_sentences:
     if isHeader(sentence):
       continue
-   
+
     found_quote = False
     start_index = -1
     sentence = sentence.strip()
@@ -576,16 +576,16 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
   for sentence in tagged_sentences:
     if isHeader(sentence):
       continue
-   
+
     words = sentence.split()
     words = retagWords(words, retag_phrases)
     # If there is a pronoun before a reference to a
-    # person, we want to change that pronoun to 
+    # person, we want to change that pronoun to
     # the actual person. If we cannot find a reference
     # the length of the returned word array will be
     # zero and we will move on to the next sentence.
     words = fixCoreferences(words)
-    #log "orig sentence ", sentence   
+    #log "orig sentence ", sentence
     for i in xrange(len(words)):
       if i == 0:
         # This is for cases like Having missed the World Cup,
@@ -607,7 +607,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
           pre_segment = words[ : index]
           words = words[index : ]
           i = i - index
-          if not (hasTag(words[0], PERSON_TAG) or 
+          if not (hasTag(words[0], PERSON_TAG) or
                   hasTag(words[0], ORGANIZATION_TAG) or
                   hasTag(words[0], LOCATION_TAG)):
             words[0] = words[0].lower()
@@ -622,8 +622,8 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
             if hasTag(question_parts[j], "/CC") and hasTag(question_parts[j-1],'/,'):
               question_parts = question_parts[:j]
               break
-          question_parts= ['[YES]'] + question_parts 
-          
+          question_parts= ['[YES]'] + question_parts
+
           question_parts[1] = question_parts[1].title()
           question = putInQuestionFormat(question_parts)
           log("question " + question)
@@ -723,7 +723,7 @@ def writeQuestions(questions, file_path):
 def preprocessFile(file_path):
   relative_file_path = file_path
   file_text = open(relative_file_path, "r")
-  preprocess_path = "preprocess-" + ntpath.basename(file_path)
+  preprocess_path = "../test_data/preprocess-" + ntpath.basename(file_path)
   relative_preprocess_path = preprocess_path
   preprocess_text = open(relative_preprocess_path, "w")
   isSoc = isSoccer(file_text.read())
@@ -735,7 +735,7 @@ def preprocessFile(file_path):
     if done == True:
       break
     # This is the first sentence in the article that
-    # contains the birthdate information for soccer 
+    # contains the birthdate information for soccer
     # players. To make sure the date gets parsed correctly
     # we change the parentheses to commas.
     if i == 3 and isSoc:
@@ -777,9 +777,9 @@ def preprocessFile(file_path):
         # it is most likely a header and we want to add
         # punctuation to distinguish the header from the
         # next sentence
-        if not ((strip_sentence.endswith(".") or 
+        if not ((strip_sentence.endswith(".") or
                 strip_sentence.endswith("!") or
-                strip_sentence.endswith("?")) 
+                strip_sentence.endswith("?"))
                 and strip_sentence != ""):
           strip_sentence = "***" + strip_sentence + "***."
         strip_sentences.append(strip_sentence)
