@@ -1,0 +1,13 @@
+# Check for proper number of command line args.
+
+EXPECTED_ARGS=2
+E_BADARGS=65
+
+if [ $# -ne $EXPECTED_ARGS ]
+then
+  echo "Usage: ./answer <article_text> <questions_text>"
+  exit $E_BADARGS
+fi
+
+cd answer_files
+./answer.py ../$1 ../$2

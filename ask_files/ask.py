@@ -645,7 +645,7 @@ def tagData(file_path):
       os.makedirs('tagged')
     # Raw text file. Must tag it first (slow!)
     subprocess.check_call(['./tag_data.sh', file_path, \
-      "../ask/tagged/", "lemma NER POS"])
+      "../ask_files/tagged/", "lemma NER POS"])
     tagged_file_name = ntpath.basename(file_path)
     tagged_file_path = "tagged/" + tagged_file_name[:-4] + ".tag"
   tagged_file = open(tagged_file_path, 'r')
@@ -711,10 +711,10 @@ def writeQuestions(questions, file_path):
   question_file.close()
 
 def preprocessFile(file_path):
-  relative_file_path = "../test_data/" + file_path
+  relative_file_path = file_path
   file_text = open(relative_file_path, "r")
-  preprocess_path = "preprocess-" + file_path
-  relative_preprocess_path = "../test_data/" + preprocess_path
+  preprocess_path = "preprocess-" + ntpath.basename(file_path)
+  relative_preprocess_path = preprocess_path
   preprocess_text = open(relative_preprocess_path, "w")
   isSoc = isSoccer(file_text.read())
   file_text.seek(0)
@@ -806,7 +806,7 @@ def preprocessFile(file_path):
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
   file_path = preprocessFile(args.txt)
-  original_file = '../test_data/' + file_path
+  original_file = file_path
   if args.tagged:
     file_path = args.tagged
 
@@ -831,16 +831,3 @@ if __name__ == '__main__':
   print "~ DONE!\n"
 
   #END
-
-
-
-
-
-
-# TODO(sjoyner): Problems to handle:
-# In the Dempsay article there is a typo. It says Dempsay 3rd goal was scored...
-# so our question generator makes the sentence Who 3rd goal was scored
-# The name entity recognizer marks commas and similar things as separate words
-# so we need to fix that when we recombine sentences
-# Need to deal with sentences like Bob was born here and he did this. He
-# should be converted.

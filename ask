@@ -1,0 +1,13 @@
+# Check for proper number of command line args.
+
+EXPECTED_ARGS=2
+E_BADARGS=65
+
+if [ $# -ne $EXPECTED_ARGS ]
+then
+  echo "Usage: ./ask <article_text> <N>"
+  exit $E_BADARGS
+fi
+
+cd ask_files
+./ask.py --txt ../$1 --N $2

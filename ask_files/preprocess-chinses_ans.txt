@@ -1,0 +1,168 @@
+***Chinese language***.
+******.
+******.
+Unless otherwise specified, Chinese texts in this article are written in format. In cases where Simplified and Traditional Chinese scripts are identical, the Chinese term is written once.
+******.
+The Chinese language is a language or language family consisting of varieties which are mutually intelligible to varying degrees.
+Chinese is distinguished by its high level of internal diversity, although all varieties of Chinese are tonal and analytic.
+It is one of the six official languages of the United Nations.
+
+******.
+******.
+***History***.
+******.
+
+Categorization of the development of Chinese is a subject of scholarly debate.
+The phonetic elements found in the majority of Chinese characters provide hints to their Old Chinese pronunciations. The pronunciation of the borrowed Chinese characters in Japanese, Vietnamese and Korean also provide valuable insights. Old Chinese was not wholly uninflected. Work on reconstructing Old Chinese started with Qīng dynasty philologists.
+The source says the reconstructions of old Chinese are tentative, not definitive, so no conclusions should be drawn. The reconstruction of Old Chinese can not be perfect so this hypothesis may be called into question. The source also notes that southern dialects of Chinese have more monosyllabic words than the Mandarin Chinese dialects.
+Middle Chinese was the language used during Southern and Northern Dynasties and the Suí, Táng, and Sòng dynasties. Linguists are more confident of having reconstructed how Middle Chinese sounded.
+The development of the spoken Chinese languages from early historical times to the present has been complex. The prevalence of Mandarin throughout northern China is largely due to north China's plains. By contrast, the mountains and rivers of middle and southern China promoted linguistic diversity.
+Until the mid-20th century, most southern Chinese only spoke their native local variety of Chinese. For the general population, however, this had limited effect. The non-Mandarin speakers in southern China also continued to use their various languages for every aspect of life. The Beijing Mandarin court standard was used solely by officials and civil servants and was thus fairly limited.
+
+In Korea and Vietnam official documents were written in Chinese until the colonial period.
+******.
+******.
+***Influences***.
+Korean and Japanese both have writing systems employing Chinese characters, which are called Hanja and Kanji, respectively.
+The Vietnamese term for Chinese writing is Hán tự. In South Korea, the Hangul alphabet is generally used, but Hanja is used as a sort of boldface. In North Korea, Hanja has been discontinued. Derived Chinese characters or Sawndip are used to write Zhuang songs, even though Zhuang is not a Chinese dialect. Since the 1950s, the Zhuang language has been written in a modified Latin alphabet.
+Languages within the influence of Chinese culture also have a very large number of loanwords from Chinese.
+The term is derived from Sinae, the Latin word for ancient China.
+******.
+******.
+***Varieties of Chinese***.
+******.
+A map below depicts the linguistic subdivisions within China itself. ***The traditionally recognized seven main groups, in order of population size are[citation needed]:***.
+Disputed classifications by some Chinese linguists[by whom? ***]:***.
+The Dungan language, spoken in Central Asia, is very closely related to Mandarin.
+Frequently, as in the case of the Guangdong province, native speakers of major variants overlap.
+Generally, mountainous South China displays more linguistic diversity than the flat North China. In parts of South China, a major city's dialect may only be marginally intelligible to close neighbours.
+******.
+******.
+***Standard Chinese and diglossia***.
+******.
+It is based on the Beijing dialect, which is the dialect of Mandarin as spoken in Beijing. The government intends for speakers of all Chinese speech varieties to use it as a common language of communication. Therefore it is used in government agencies, in the media, and as a language of instruction in schools.
+A native of Guangzhou may speak both Cantonese and putonghua, a resident of Taiwan, both Taiwanese and putonghua/guoyu.
+******.
+******.
+***Linguistics***.
+******.
+Measuring this mutual intelligibility is not precise, but Chinese is often compared to the Romance languages in this regard.
+
+In Chinese, the major spoken varieties of Chinese are called fangyan, customarily translated into English as dialects. Chinese use a different word for mutually intelligible variants within the fangyan: didian fangyan, also translated as "dialect".
+******.
+******.
+***Writing***.
+******.
+The relationship between the Chinese spoken and written language is rather complex. Its spoken varieties evolved at different rates, while written Chinese itself has changed much less.
+Chinese characters are morphemes independent of phonetic change. Thus the number "one", yi in Mandarin, jat in Cantonese and chi̍t in Hokkien, all share an identical character.
+Written colloquial Cantonese has become quite popular in online chat rooms and instant messaging amongst Hong-Kongers and Cantonese-speakers elsewhere. Use of it is considered highly informal, and does not extend to many formal occasions.
+In Hunan, women in certain areas write their local language in Nü Shu, a syllabary derived from Chinese characters.
+******.
+******.
+***Chinese characters***.
+******.
+Chinese characters evolved over time from earlier forms of hieroglyphs. There are about 214 radicals recognized in the Kangxi Dictionary.
+******.
+Modern characters are styled after the regular script. Various other written styles are also used in Chinese calligraphy, including seal script, cursive script and clerical script. Calligraphy artists can write in traditional and simplified characters, but tend to use traditional characters for traditional art.
+There are currently two systems for Chinese characters.
+The Internet provides the platform to practice reading the alternative system, be it traditional or simplified.
+A well-educated Chinese reader today recognizes approximately 5,000–7,000 characters; approximately 3,000 characters are required to read a Mainland newspaper.
+******.
+******.
+***Phonology***.
+******.
+There are some instances where a vowel is not used as a nucleus.
+Consonant clusters do not generally occur in either the onset or coda.
+
+All varieties of spoken Chinese use tones.
+***" The tones correspond to these five characters:***.
+***妈／� "mother"—high level***.
+***� "linen" or "numb"—high rising***.
+***马／� "horse"—low falling-rising***.
+***骂／� "scold"—high falling***.
+***吗／� "question particle"—neutral***.
+******.
+******.
+***Phonetic transcriptions***.
+
+******.
+******.
+***Romanization***.
+******.
+Romanization is the process of transcribing a language into the Latin script. Chinese is first known to have been written in Latin characters by Western Christian missionaries in the 16th century.
+Chinese parents also use Pinyin to teach their children the sounds and tones of new words.
+As this system approximates the phonology of Mandarin Chinese into English consonants and vowels, i.e. it is an Anglicization, it may be particularly helpful for beginner Chinese speakers of an English-speaking background. Wade-Giles was found in academic use in the United States, particularly before the 1980s, and until recently[when? ] was widely used in Taiwan.
+
+***Here are a few examples of Hanyu Pinyin and Wade-Giles, for comparison:***.
+
+******.
+******.
+***Other phonetic transcriptions***.
+Chinese languages have been phonetically transcribed into many other writing systems over the centuries. The 'Phags-pa script, for example, has been very helpful in reconstructing the pronunciations of pre-modern forms of Chinese.
+Zhuyin, a semi-syllabary is still widely used in Taiwan's elementary schools to aid standard pronunciation. A comparison table of zhuyin to pinyin exists in the zhuyin article. ***Syllables based on pinyin and zhuyin can also be compared by looking at the following articles:***.
+***Pinyin table***.
+***Zhuyin table***.
+There are also at least two systems of cyrillization for Chinese. The most widespread is the Palladius system.
+******.
+******.
+***Grammar and morphology***.
+******.
+Chinese is often described as a "monosyllabic" language. However, this is only partially correct.
+In modern Mandarin, however, most nouns, adjectives and verbs are largely disyllabic. A significant cause of this is phonological attrition. Sound change over time has steadily reduced the number of possible syllables.
+This phonological collapse has led to a corresponding increase in the number of homophones.
+
+Most modern varieties of Chinese have the tendency to form new words through disyllabic, trisyllabic and tetra-character compounds.
+A Chinese cí can consist of more than one character-morpheme, usually two, but there can be three or more.
+***For example:***.
+***Yun 雲—"cloud"***.
+***Yun 云—"cloud"***.
+***Han-bao-bao/Hanbao 漢堡包／漢堡—"hamburger"***.
+***Han-bao-bao/Hanbao 汉堡包／汉堡—"hamburger"***.
+***Wo 我—"I, me"***.
+***Ren 人—"people"***.
+***Di-qiu 地球—"earth"***.
+***Shan-dian 閃電—"lightning"***.
+***Shan-dian 闪电—"lightning"***.
+***Meng 夢—"dream"***.
+***Meng 梦—"dream"***.
+
+They make heavy use of grammatical particles to indicate aspect and mood. In Mandarin Chinese, this involves the use of particles like le 了, hai 还／還, yijing 已经／已經, and so on.
+
+
+Although the grammars of the spoken varieties share many traits, they do possess differences.
+******.
+******.
+***Tones and homophones***.
+Even this is often not enough unless the context and exact phrase or cí is identified.
+***"***.
+Southern Chinese varieties like Cantonese and Hakka preserved more of the rimes of Middle Chinese and have more tones. The previous examples of jī, have more distinct pronunciations in Cantonese: gai1, gei1, gei1, gik1, gei1, and zik1 respectively. For this reason, southern varieties tend to need to employ fewer multi-syllabic words.
+******.
+******.
+***Vocabulary***.
+
+Estimates of the total number of Chinese words and phrases vary greatly. The Hanyu Da Zidian, a compendium of Chinese characters, includes 54,678 head entries for characters, including bone oracle versions. The CC-CEDICT project contains 97,404 contemporary entries including idioms, technology terms and names of political figures, businesses and products. The 2009 version of the Webster's Digital Chinese Dictionary, based on CC-CEDICT, contains over 84,000 entries.
+
+
+******.
+******.
+***Loanwords***.
+******.
+Like any other language, Chinese has absorbed a sizable number of loanwords from other cultures. Most Chinese words are formed out of native Chinese morphemes, including words describing imported objects and ideas. However, direct phonetic borrowing of foreign words has gone on since ancient times.
+Ancient words borrowed from along the Silk Road since Old Chinese include 葡萄 "grape", 石榴 "pomegranate" and 狮子／獅子 "lion". Some words were borrowed from Buddhist scriptures, including 佛 "Buddha" and 菩萨／菩薩 "bodhisattva. " Other words came from nomadic peoples to the north, such as 胡同 "hutong". Words borrowed from the peoples along the Silk Road, such as 葡萄 "grape" generally have Persian etymologies. Buddhist terminology is generally derived from Sanskrit or Pāli, the liturgical languages of North India.
+******.
+******.
+***Modern borrowings and loanwords***.
+Occasionally half-transliteration, half-translation compromises are accepted, such as 汉堡包／漢堡包 hànbǎo bāo for "hamburger". This is often done for commercial purposes, for example 奔腾／奔騰 bēnténg for Pentium and 赛百味／賽百味 Sàibǎiwèi for Subway restaurants.
+Foreign words, mainly proper nouns, continue to enter the Chinese language by transcription according to their pronunciations. This is done by employing Chinese characters with similar pronunciations. For example, "Israel" becomes 以色列 yǐsèliè, "Paris" becomes 巴黎 bālí. For example, 沙发／沙發 "sofa" and 马达／馬達 "motor" in Shanghainese sound more like their English counterparts.
+Western foreign words representing Western concepts have influenced Chinese since the 20th century through transcription. From French came 芭蕾 bāléi "ballet", 香槟 xiāngbīn, "champagne", an from Italian 咖啡 kāfēi "caffè". English influence is particularly pronounced. Later United States soft influences gave rise to 迪斯科 dísīkè "disco", 可乐／可樂 kělè "cola", and 迷你 mínǐ "mini [skirt]".
+
+Since the 20th century, another source of words has been Japanese using existing kanji. Japanese re-molded European concepts and inventions into wasei-kango, and many of these words have been re-loaned into modern Chinese.
+******.
+******.
+***Education***.
+******.
+
+
+******.
+******.
+
