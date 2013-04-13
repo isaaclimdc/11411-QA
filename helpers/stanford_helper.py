@@ -21,7 +21,7 @@ def getTag(line, tag_types):
   for tag_type in tag_types:
     start_tag = '<' + tag_type + '>'
     end_tag = '</' + tag_type + '>'
-    
+
     if start_tag in line:
       start_index = string.find(line, start_tag) + len(start_tag)
       end_index = string.find(line, end_tag)
@@ -69,7 +69,7 @@ def parseLine(line):
 
 def getIndex(line):
   start_index = line.find('"') + 1
-  end_index = line.find('"', start_index) 
+  end_index = line.find('"', start_index)
   line = line[start_index : end_index]
   return int(line) - 1
 
@@ -126,7 +126,7 @@ def getCoreferences(xml_file, sentences):
     elif '</mention>' in line:
         if initial_reference == False:
           sentence = sentences[sentence_index]
-        
+
           words = sentence.split()
           for i in range(start_index, end_index):
             words[i] = words[i] + "/" + '%20'.join(reference)
@@ -194,7 +194,7 @@ if __name__ == '__main__':
 
   xml_file = getXMLFileLocation(input_path)
 
-  xml_file = open(xml_file, 'r')
+  xml_file = open("tmp/" + ntpath.basename(xml_file), 'r')
   tagged_sentences = parseXMLFile(xml_file, tag_types)
 
 

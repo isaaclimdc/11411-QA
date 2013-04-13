@@ -1,5 +1,9 @@
 #!/usr/local/bin/python
-import re
+import re, sys
+
+# Print only to stderr
+def log(s):
+  sys.stderr.write(s + "\n")
 
 def extractEntity(content):
   entity = content.split('\n', 1)[0]

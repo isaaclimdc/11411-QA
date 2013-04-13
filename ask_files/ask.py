@@ -6,10 +6,6 @@ from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
 from util import *
 
-# Print only to stderr
-def log(s):
-  sys.stderr.write(s + "\n")
-
 # try:
 #   from nltk.corpus import wordnet
 # except:
@@ -310,7 +306,7 @@ def makeWhoQuestions(sentences):
               question_words = question_words[1 : ]
             question = makeWhoQuestion(question_words, ['Against', 'who', 'did', 'THING'])
             question = cleanQuestion(question)
-            log(question)
+            # log(question)
             who_questions.append(question)
             break
   return who_questions
@@ -357,7 +353,7 @@ def makeWhereQuestions(sentences):
     sentence = sentence.strip()
     if isHeader(sentence):
       continue
-   
+
     words = sentence.split()
 
     words = truncateSentence(words)
@@ -463,7 +459,7 @@ def makeWhenQuestions(sentences):
     sentence = sentence.strip()
     if isHeader(sentence):
       continue
-   
+
     words = sentence.split()
     n = len(words)
 
@@ -500,7 +496,7 @@ def makeQuoteQuestions(tagged_sentences):
   for sentence in tagged_sentences:
     if isHeader(sentence):
       continue
-   
+
     found_quote = False
     start_index = -1
     sentence = sentence.strip()
@@ -575,12 +571,12 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
   for sentence in tagged_sentences:
     if isHeader(sentence):
       continue
-   
+
     words = sentence.split()
     words = retagWords(words, retag_phrases)
     sentence = ' '.join(words)
     # If there is a pronoun before a reference to a
-    # person, we want to change that pronoun to 
+    # person, we want to change that pronoun to
     # the actual person. If we cannot find a reference
     # the length of the returned word array will be
     # zero and we will move on to the next sentence.
@@ -654,8 +650,8 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
                         hasTag(question_parts[j-1], PERSON_TAG))):
               question_parts = question_parts[:j]
               break
-          question_parts= ['[YES]'] + question_parts 
-          
+          question_parts= ['[YES]'] + question_parts
+
           question_parts[1] = question_parts[1].title()
           question = putInQuestionFormat(question_parts)
           if is_no_question:
@@ -741,11 +737,6 @@ def rankQuestions(questions, file_path):
 
   return ranked_questions
 
-# Print questions to stdout
-def printQuestions(questions):
-  for question in questions:
-    print question
-
 # Write questions to file.
 def writeQuestions(questions, file_path):
   if not os.path.exists('questions'):
@@ -759,11 +750,9 @@ def writeQuestions(questions, file_path):
 def preprocessFile(file_path):
   relative_file_path = file_path
   file_text = open(relative_file_path, "r")
-  preprocess_path = "preprocess-" + ntpath.basename(file_path)
-  print preprocess_path
-  print
-  relative_preprocess_path = "../test_data/"+preprocess_path
-  preprocess_text = open(relative_preprocess_path, "w+")
+  preprocess_path = "../test_data/preprocess-" + ntpath.basename(file_path)
+  relative_preprocess_path = preprocess_path
+  preprocess_text = open(relative_preprocess_path, "w")
   isSoc = isSoccer(file_text.read())
   file_text.seek(0)
   i = 0
@@ -773,7 +762,7 @@ def preprocessFile(file_path):
     if done == True:
       break
     # This is the first sentence in the article that
-    # contains the birthdate information for soccer 
+    # contains the birthdate information for soccer
     # players. To make sure the date gets parsed correctly
     # we change the parentheses to commas.
     if i == 3 and isSoc:
@@ -815,9 +804,9 @@ def preprocessFile(file_path):
         # it is most likely a header and we want to add
         # punctuation to distinguish the header from the
         # next sentence
-        if not ((strip_sentence.endswith(".") or 
+        if not ((strip_sentence.endswith(".") or
                 strip_sentence.endswith("!") or
-                strip_sentence.endswith("?")) 
+                strip_sentence.endswith("?"))
                 and strip_sentence != ""):
           strip_sentence = "***" + strip_sentence + "***."
         strip_sentences.append(strip_sentence)
@@ -852,7 +841,6 @@ def preprocessFile(file_path):
 
 if __name__ == '__main__':
   file_path = preprocessFile(args.txt)
-  original_file = file_path
   if args.tagged:
     file_path = args.tagged
 
@@ -863,17 +851,18 @@ if __name__ == '__main__':
   log("~ DONE!\n")
 
   log("~ Generating Questions...")
-  questions = generateQuestions(tagged_sentences, original_file)
-  questions = questions[:Nqns]
+  questions = generateQuestions(tagged_sentences, args.txt)
   log("~ DONE!\n")
 
   log("~ Ranking questions...")
   ranked_questions = rankQuestions(questions, file_path)
+  best_questions = ranked_questions[:Nqns]
   # ranked_questions = ranked_questions[:Nqns]
   log("~ DONE!\n")
 
   log("~ Printing questions to stdout...")
-  printQuestions(questions)
+  print best_questions
+
   log("~ DONE!\n")
 
   # log("~ Writing questions to file...")
