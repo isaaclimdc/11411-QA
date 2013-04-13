@@ -5,7 +5,9 @@ lib_path = os.path.abspath('../libraries')
 sys.path.append(lib_path)
 from nltk_helper import splitIntoSentences2, getSynonyms
 
-
+# Print only to stderr
+def log(s):
+  sys.stderr.write(s + "\n")
 
 #######################
 ###### Constants ######
@@ -206,11 +208,14 @@ def computeDistances(articleFile, questionFile):
         closestSentence = answer
         sentenceDistance = count
 
-    print "\n-------"
-    print "Question sentence: " + question
-    print "Answer sentence: " + closestSentence
-    print "Damerau distance: " + str(sentenceDistance)
-    print "-------\n"
+    log("-------")
+    log("Question sentence:")
+    log(question)
+    log("Answer:")
+    print(closestSentence)
+    log("Damerau distance:")
+    log(str(sentenceDistance))
+    log("-------")
 
     # Reset synonym dict.
     glob_syn_dict = dict()
