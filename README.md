@@ -22,12 +22,12 @@ All the above dependencies can be installed by simply running `./dep.sh` at the 
 
 Ask
 ---
-`./ask.py <article.txt> <N>`
+`./ask <article.txt> <N>`
 
 This will generate `N` questions from a given `article.txt`. Redirecting (`>`) the output will send ONLY the questions to a file.
 
 Answer
 ------
-`./answer.py <article.txt> <questions.txt>`
+`./answer <article.txt> <questions.txt>`
 
 This will answer the questions in `questions.txt` (1 per line), looking for the answers in `article.txt`. Redirecting (`>`) the output will send ONLY the answers to a file.
