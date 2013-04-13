@@ -7,10 +7,6 @@
 from util import *
 import os, sys
 
-# Print only to stderr
-def log(s):
-  sys.stderr.write(s + "\n")
-
 def generateSoccerQuestions(content, tagged_sentences):
   return []
 
@@ -22,10 +18,8 @@ def generateMovieQuestions(content, tagged_sentences):
   cast = content[cast_begin:cast_end]
   cast_lines = cast.split('\n')
   for item in cast_lines:
-    log(item)
     if ' as ' in item:
       entity = item.split(' as ', 1)[0].strip()
-      log("entity " + entity)
       question = "[SPECIFIC] Who did " + entity + " play?"
       to_return.append(question)
   return to_return

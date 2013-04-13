@@ -6,10 +6,6 @@ from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
 from util import *
 
-# Print only to stderr
-def log(s):
-  sys.stderr.write(s + "\n")
-
 # try:
 #   from nltk.corpus import wordnet
 # except:
@@ -311,7 +307,7 @@ def makeWhoQuestions(sentences):
               question_words = question_words[1 : ]
             question = makeWhoQuestion(question_words, ['Against', 'who', 'did', 'THING'])
             question = cleanQuestion(question)
-            log(question)
+            # log(question)
             who_questions.append(question)
             break
   return who_questions
@@ -626,7 +622,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
 
           question_parts[1] = question_parts[1].title()
           question = putInQuestionFormat(question_parts)
-          log("question " + question)
+          # log("question " + question)
           yes_no_questions.append(question)
           break
   return yes_no_questions
@@ -704,11 +700,6 @@ def rankQuestions(questions, file_path):
   rank_file.close()
 
   return ranked_questions
-
-# Print questions to stdout
-def printQuestions(questions):
-  for question in questions:
-    print question
 
 # Write questions to file.
 def writeQuestions(questions, file_path):
@@ -814,7 +805,6 @@ def preprocessFile(file_path):
 
 if __name__ == '__main__':
   file_path = preprocessFile(args.txt)
-  original_file = file_path
   if args.tagged:
     file_path = args.tagged
 
@@ -825,7 +815,7 @@ if __name__ == '__main__':
   log("~ DONE!\n")
 
   log("~ Generating Questions...")
-  questions = generateQuestions(tagged_sentences, original_file)
+  questions = generateQuestions(tagged_sentences, args.txt)
   log("~ DONE!\n")
 
   log("~ Ranking questions...")
@@ -835,7 +825,8 @@ if __name__ == '__main__':
   log("~ DONE!\n")
 
   log("~ Printing questions to stdout...")
-  printQuestions(best_questions)
+  print best_questions
+
   log("~ DONE!\n")
 
   # log("~ Writing questions to file...")

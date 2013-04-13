@@ -7,10 +7,6 @@
 from util import *
 import os, sys
 
-# Print only to stderr
-def log(s):
-  sys.stderr.write(s + "\n")
-
 # Generic questions for each type of file we get.
 generic_soccer = [
     'When was [ENTITY] born?',
@@ -86,3 +82,6 @@ def makeGenericQuestions(content, tagged_sentences):
       question = question.replace('[ENTITY]', entity)
       to_return.append('[GENERIC]' + question)
     return to_return
+
+  log("!!!!!PROBLEM!!!!! .... CATEGORY NOT IDENTIFIED ... TELL MANISH THIS \
+      HAPPENED")
