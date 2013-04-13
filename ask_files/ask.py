@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 
-import argparse, os, sys, string, re, subprocess, ntpath, nltk.data
+import argparse, os, sys, string, re, subprocess, ntpath, nltk.data, random
 from qranker import rank
 from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
@@ -80,6 +80,8 @@ def appendToPreviousWord(word):
   for appendage in appendages:
     if word == appendage:
       return True
+    elif word.startswith(','):
+      return True
   return False
 
 def condenseWords(question_parts):
@@ -121,10 +123,7 @@ def retagWords(words, proper_entity_tags):
     for proper_entity in proper_entity_tags:
       proper_entity_no_tag = removeTag(proper_entity)
       if word_no_tag == proper_entity_no_tag:
-        old_tag_index = words[i].rfind('/')
-        words[i] = words[i][:old_tag_index]
-        new_tag_index = proper_entity.rfind('/')
-        words[i] = words[i] + proper_entity[new_tag_index:]
+        words[i] = proper_entity
   return words
 
 def removePunctuation(question_parts):
@@ -579,6 +578,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
    
     words = sentence.split()
     words = retagWords(words, retag_phrases)
+    sentence = ' '.join(words)
     # If there is a pronoun before a reference to a
     # person, we want to change that pronoun to 
     # the actual person. If we cannot find a reference
@@ -586,49 +586,83 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
     # zero and we will move on to the next sentence.
     words = fixCoreferences(words)
     #log "orig sentence ", sentence   
-    for i in xrange(len(words)):
+    i = 0
+    is_no_question = False
+    has_neg_word = False
+    while i < len(words):
       if i == 0:
+        index = 0
+        if hasTag(words[i], "/RB") and hasTag(words[i+1], "/,"):
+          words = words[i+2:]
         # This is for cases like Having missed the World Cup,
         # Bob did this. We want this to be having missed the World
         # Cup, did Bob do this, not Did having missing the World
         # Cup, Bob did this.
-        wait_until_after_comma = hasTag(words[i], "/VB") or hasTag(words[i], "/IN")
+        wait_until_after_comma = (hasTag(words[i], "/VB") or hasTag(words[i], "/IN") or
+                                  hasTag(words[i], "/WRB") or hasTag(words[i], "/RB"))
+        another_comma = False
         if hasTag(words[i], "/CC"):
           break
       if wait_until_after_comma:
-        if hasTag(words[i], ","):
+        if hasTag(words[i], ",") and not wait_until_after_comma:
           wait_until_after_comma = False
+          index = i+1
+        elif hasTag(words[i], ","):
+          another_comma = True
       else:
         pre_segment = []
+        if words[i].startswith("not/") or words[i].startswith("never/"):
+          has_neg_word = True
         # Can make a yes/no question by moving verb
         # to the beginning of the segment.
-        if hasTag(words[i], "/VB"):
-          index = findBeginningOfSegment(words, i)
+        # Counterexample for NNS
+        # The official constellation/NN boundaries/NNS, as set... 
+        if (hasTag(words[i], "/VBZ") or hasTag(words[i], "/VBP") 
+          or hasTag(words[i], "/VBD")):  
+          if hasTag(words[i], "/VBZ"):
+            did_phrase = ["does"]
+          else:
+            did_phrase = ["did"]
+          if words[i].startswith("were"):
+            words[i] = words[i].replace("were", "was")
+          #index = findBeginningOfSegment(words, i)
           pre_segment = words[ : index]
           words = words[index : ]
           i = i - index
+          if not has_neg_word:
+            rand = random.random()
+            is_no_question = rand > 0.5
+          if is_no_question:
+            words = words[:i] + ["not"] + words[i:]
+            i +=1
           if not (hasTag(words[0], PERSON_TAG) or 
                   hasTag(words[0], ORGANIZATION_TAG) or
-                  hasTag(words[0], LOCATION_TAG)):
+                  hasTag(words[0], LOCATION_TAG) or
+                  hasTag(words[0], "/NNP")):
             words[0] = words[0].lower()
           if hasRootWord(words[i], "be") or (hasRootWord(words[i], "have") and hasTag(words[i+1], "/VB")):
             question_parts = pre_segment + [words[i]] + words[:i] + words[i+1:]
           elif hasRootWord(words[i], "do"):
-            question_parts = pre_segment + ["did"] + words[:i] + words[i+1:]
+            question_parts = pre_segment + did_phrase + words[:i] + words[i+1:]
           else:
-            words[i] = fixTense(words[i])
-            question_parts = pre_segment + ["did"] + words
+            if not another_comma:
+              words[i] = fixTense(words[i])
+            question_parts = pre_segment + did_phrase + words
           for j in xrange(i+1,len(question_parts)):
-            if hasTag(question_parts[j], "/CC") and hasTag(question_parts[j-1],'/,'):
+            if (hasTag(question_parts[j], "/CC") #and hasTag(question_parts[j-1],'/,')
+               and not (hasTag(question_parts[j+1], "/JJ") or 
+                        hasTag(question_parts[j-1], PERSON_TAG))):
               question_parts = question_parts[:j]
               break
           question_parts= ['[YES]'] + question_parts 
           
           question_parts[1] = question_parts[1].title()
           question = putInQuestionFormat(question_parts)
-          log("question " + question)
+          if is_no_question:
+            log("NOOOO "+question) 
           yes_no_questions.append(question)
           break
+      i+=1
   return yes_no_questions
 
 ########################
@@ -673,7 +707,9 @@ def cleanQuestion(question):
   return question
 
 def generateQuestions(tagged_sentences, original_file):
-  retag_entities = ["Aries/PERSON", "Segue/PERSON"]
+  retag_entities = ["Aries/Aries/NNP/PERSON", "Segue/Segue/NNP/PERSON", 
+                    "Dementor/Dementor/NNP/PERSON" , "Dementors/Dementors/NNP/PERSON",
+                    "Posh/Posh/NNP/PERSON"]
   questions = []
   questions += makeWhoQuestions(tagged_sentences)
   questions += makeWhenQuestions(tagged_sentences)
@@ -724,8 +760,10 @@ def preprocessFile(file_path):
   relative_file_path = file_path
   file_text = open(relative_file_path, "r")
   preprocess_path = "preprocess-" + ntpath.basename(file_path)
-  relative_preprocess_path = preprocess_path
-  preprocess_text = open(relative_preprocess_path, "w")
+  print preprocess_path
+  print
+  relative_preprocess_path = "../test_data/"+preprocess_path
+  preprocess_text = open(relative_preprocess_path, "w+")
   isSoc = isSoccer(file_text.read())
   file_text.seek(0)
   i = 0
@@ -810,7 +848,7 @@ def preprocessFile(file_path):
     #i+=1
   file_text.close()
   preprocess_text.close()
-  return preprocess_path
+  return relative_preprocess_path
 
 if __name__ == '__main__':
   file_path = preprocessFile(args.txt)
