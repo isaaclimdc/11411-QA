@@ -10,4 +10,6 @@ test_data/*
 
 #Misc stuff
 .DS_Store
+.backups
+preprocess*
 *.pyc
