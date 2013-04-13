@@ -93,6 +93,25 @@ def condenseWords(question_parts):
       i+=1
   return question_parts
 
+def removeParenthesesInfo(sentence):
+  start_index = -1
+  i = 0
+  while i < len(sentence):
+    if sentence[i] == '(':
+      start_index = i
+    elif sentence[i] == ')':
+      if start_index != -1:
+        sentence = sentence[:start_index-1] + sentence[i+1:]
+        i = start_index-1
+        start_index = -1
+    i+=1
+  return sentence
+
+# Determine if the line is a header like "Background"
+def isHeader(line):
+  # Headers will start with *** and end with ***.
+  return "\*\*\*" in line
+
 def retagWords(words, proper_entity_tags):
   for i in range(len(words)):
     word_no_tag = removeTag(words[i])
@@ -106,10 +125,12 @@ def retagWords(words, proper_entity_tags):
   return words
 
 def removePunctuation(question_parts):
-  punctuation = ['.', ',', '?']
+  punctuation = ['.', ',', '?', ".'"]
   for p in punctuation:
     if question_parts[-1] == p:
       question_parts = question_parts[:-1]
+    elif question_parts[-1].endswith(p):
+      question_parts[-1] = question_parts[-1][:-len(p)]
   return question_parts
 
 def appendQuestionMark(question_parts):
@@ -260,6 +281,8 @@ def makeWhoQuestion(words, question_parts):
 def makeWhoQuestions(sentences):
   who_questions = []
   for sentence in sentences:
+    if isHeader(sentence):
+      continue
     sentence = sentence.strip()
     words = sentence.split()
 
@@ -331,6 +354,9 @@ def makeWhereQuestions(sentences):
   where_questions = []
   for sentence in sentences:
     sentence = sentence.strip()
+    if isHeader(sentence):
+      continue
+   
     words = sentence.split()
 
     words = truncateSentence(words)
@@ -430,6 +456,9 @@ def makeWhenQuestions(sentences):
   when_questions = []
   for sentence in sentences:
     sentence = sentence.strip()
+    if isHeader(sentence):
+      continue
+   
     words = sentence.split()
     n = len(words)
 
@@ -464,6 +493,9 @@ def makeQuoteQuestions(tagged_sentences):
   quote_questions = []
   root_words = ['say', 'comment']
   for sentence in tagged_sentences:
+    if isHeader(sentence):
+      continue
+   
     found_quote = False
     start_index = -1
     sentence = sentence.strip()
@@ -503,26 +535,32 @@ def getCoreference(word):
       break
   if index != -1:
     coref = word[index+1:]
+    index = coref.find('/')
+    if index != -1:
+      coref = coref[:index]
     coref = coref.split('%20')
     for i in range(len(coref)):
-      coref[i] = coref[i].title() + "/NNP/PERSON/"
+      coref[i] = coref[i] + "/NNP/PERSON/"
   else:
     coref = []
   return coref
 
 def fixCoreferences(question_parts):
   i = 0
+  ref = dict()
   while i != len(question_parts):
     if hasTag(question_parts[i], PERSON_TAG):
       break
     elif hasTag(question_parts[i], '/PRP'):# and removeTag(question_parts[i]) != "it":
       words = getCoreference(question_parts[i])
       if len(words) != 0:
-        question_parts = question_parts[:i] + words + question_parts[i+1:]
-        i = i + len(words)
+        if question_parts[i] not in ref:
+          question_parts = question_parts[:i] + words + question_parts[i+1:]
+          i = i + len(words)
+          ref[question_parts[i]] = True
       else:
         question_parts = []
-      break
+        break
     else:
       i += 1
   return question_parts
@@ -530,6 +568,9 @@ def fixCoreferences(question_parts):
 def makeYesNoQuestion(tagged_sentences, retag_phrases):
   yes_no_questions = []
   for sentence in tagged_sentences:
+    if isHeader(sentence):
+      continue
+   
     words = sentence.split()
     words = retagWords(words, retag_phrases)
     # If there is a pronoun before a reference to a
@@ -538,40 +579,51 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
     # the length of the returned word array will be
     # zero and we will move on to the next sentence.
     words = fixCoreferences(words)
+    #print "orig sentence ", sentence   
     for i in xrange(len(words)):
-      # Can make a yes/no question by moving verb
-      # to the beginning of the sentence.
-      if hasTag(words[i], "/VB"):
-        index = findBeginningOfSegment(words, i)
-        pre_segment = words[:index]
-        words = words[index:]
-        i = i - index
-        # Weird edge case
-        if hasRootWord(words[i], "be"):
-          if hasTag(words[i-1], "/MD"):
-            temp = words[i]
-            words[i] = words[i-1]
-            words[i-1] = temp
-        else:
-          if (hasTag(words[i], "/VBZ") or
-              hasTag(words[i], "/VBP")):
-            words[i] = "did"
+      if i == 0:
+        # This is for cases like Having missed the World Cup,
+        # Bob did this. We want this to be having missed the World
+        # Cup, did Bob do this, not Did having missing the World
+        # Cup, Bob did this.
+        wait_until_after_comma = hasTag(words[i], "/VB") or hasTag(words[i], "/IN")
+        if hasTag(words[i], "/CC"):
+          break
+      if wait_until_after_comma:
+        if hasTag(words[i], ","):
+          wait_until_after_comma = False
+      else:
+        pre_segment = []
+        # Can make a yes/no question by moving verb
+        # to the beginning of the segment.
+        if hasTag(words[i], "/VB"):
+          index = findBeginningOfSegment(words, i)
+          pre_segment = words[ : index]
+          words = words[index : ]
+          i = i - index
+          if not (hasTag(words[0], PERSON_TAG) or 
+                  hasTag(words[0], ORGANIZATION_TAG) or
+                  hasTag(words[0], LOCATION_TAG)):
+            words[0] = words[0].lower()
+          if hasRootWord(words[i], "be") or (hasRootWord(words[i], "have") and hasTag(words[i+1], "/VB")):
+            question_parts = pre_segment + [words[i]] + words[:i] + words[i+1:]
+          elif hasRootWord(words[i], "do"):
+            question_parts = pre_segment + ["did"] + words[:i] + words[i+1:]
           else:
-            words = words[:i] + ["did"] + words[i:]
-          for j in range(i+1,len(words)):
-            if hasTag(words[j], "/VB"):
-              words[j] = fixTense(words[j])
+            words[i] = fixTense(words[i])
+            question_parts = pre_segment + ["did"] + words
+          for j in xrange(i+1,len(question_parts)):
+            if hasTag(question_parts[j], "/CC") and hasTag(question_parts[j-1],'/,'):
+              question_parts = question_parts[:j]
               break
-        if not (hasTag(words[0], PERSON_TAG) or
-                hasTag(words[0], ORGANIZATION_TAG) or
-                hasTag(words[0], LOCATION_TAG)):
-          words[0] = words[0].lower()
-        
-        question_parts= ['[YES]'] + pre_segment + [words[i]] + words[:i] + words[i+1:]
-        question_parts[1] = question_parts[1].title()
-        question = putInQuestionFormat(question_parts)
-        yes_no_questions.append(question)
-        break
+          question_parts= ['[YES]'] + question_parts 
+          
+          question_parts[1] = question_parts[1].title()
+          question = putInQuestionFormat(question_parts)
+          print "question ", question
+          print
+          yes_no_questions.append(question)
+          break
   return yes_no_questions
 
 ########################
@@ -672,28 +724,6 @@ def preprocessFile(file_path):
   for line in file_text.readlines():
     if done == True:
       break
-    sentences = sent_detector.tokenize(line)
-    strip_sentences = []
-    for sentence in sentences:
-      strip_sentence = sentence.strip()
-      words = strip_sentence.split()
-      if len(words) < 20:
-        # We don't want to include the reference section
-        if strip_sentence == "See also":
-          done = True
-          break
-        # If the sentence doesn't end with a period or
-        # another form of ending sentence punctuation,
-        # it is most likely a header and we want to add
-        # punctuation to distinguish the header from the
-        # next sentence
-        if not ((strip_sentence.endswith(".") or 
-                strip_sentence.endswith("!") or
-                strip_sentence.endswith("?")) 
-                and strip_sentence != ""):
-          strip_sentence = strip_sentence + "."
-        strip_sentences.append(strip_sentence)
-    line = ' '.join(strip_sentences) + '\n'
     # This is the first sentence in the article that
     # contains the birthdate information for soccer 
     # players. To make sure the date gets parsed correctly
@@ -720,6 +750,30 @@ def preprocessFile(file_path):
       born_sentence = words[0:born_start_index] + ['was'] + words[born_start_index : born_end_index]
       born_sentence[len(born_sentence)-1] = born_sentence[len(born_sentence)-1] + '.'
       line = ' '.join(intro_sentence + born_sentence)
+    if ("(" in line and ")" in line):
+      line = removeParenthesesInfo(line)
+    sentences = sent_detector.tokenize(line)
+    strip_sentences = []
+    for sentence in sentences:
+      strip_sentence = sentence.strip()
+      words = strip_sentence.split()
+      if len(words) < 20:
+        # We don't want to include the reference section
+        if strip_sentence == "See also":
+          done = True
+          break
+        # If the sentence doesn't end with a period or
+        # another form of ending sentence punctuation,
+        # it is most likely a header and we want to add
+        # punctuation to distinguish the header from the
+        # next sentence
+        if not ((strip_sentence.endswith(".") or 
+                strip_sentence.endswith("!") or
+                strip_sentence.endswith("?")) 
+                and strip_sentence != ""):
+          strip_sentence = "***" + strip_sentence + "***."
+        strip_sentences.append(strip_sentence)
+    line = ' '.join(strip_sentences) + '\n'
     preprocess_text.write(line)
     i += 1
     #  for j in range(len(line)):
