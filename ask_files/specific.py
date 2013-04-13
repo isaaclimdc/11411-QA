@@ -7,14 +7,9 @@
 from util import *
 import os, sys
 
-# Toggle debug logs
-DDEBUG = False
-
-def log(s=""):
-  if DDEBUG:
-    print s
-  else:
-    sys.stderr.write(s + "\n")
+# Print only to stderr
+def log(s):
+  sys.stderr.write(s + "\n")
 
 def generateSoccerQuestions(content, tagged_sentences):
   return []

@@ -6,14 +6,9 @@ from generic import makeGenericQuestions
 from specific import makeSpecificQuestions
 from util import *
 
-# Toggle debug logs
-DDEBUG = False
-
-def log(s=""):
-  if DDEBUG:
-    print s
-  else:
-    sys.stderr.write(s + "\n")
+# Print only to stderr
+def log(s):
+  sys.stderr.write(s + "\n")
 
 # try:
 #   from nltk.corpus import wordnet

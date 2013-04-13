@@ -2,12 +2,9 @@
 
 import string, sys, subprocess, ntpath, os
 
-# Toggle debug logs
-DDEBUG = False
-
-def log(s=""):
-  if DDEBUG:
-    print s
+# Print only to stderr
+def log(s):
+  sys.stderr.write(s + "\n")
 
 POSITION = 'POS'
 NAMED_ENTITY = 'NER'
