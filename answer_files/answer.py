@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/afs/andrew.cmu.edu/usr/ysim/python-411/bin/python
 
 import logging, os, sys, string, re
 lib_path = os.path.abspath('../libraries')
@@ -177,6 +177,8 @@ def makeSentenceArray(inputFile):
   for i in range(len(sentences)):
     sentences[i] = sentences[i].strip()
   f.close()
+
+  sentences = filter(lambda s: len(s) > 0, sentences)
   return sentences
 
 def computeDistances(articleFile, questionFile):
