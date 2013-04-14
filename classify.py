@@ -13,8 +13,11 @@ print "Running..."
 # For example, if NNP and NNS are POS tags of the same sentence, then the rule
 # is present (or) if there are two VBD rules in the same sentence, the rule
 # is present.
-#rules = ['NNP NNS', 'VBD NNS', 'VBD VBD']
-rules = ['VBD VBD', 'NNP NNS', 'VBD NNS', 'WRB VBD']
+# The rule 'NO-VBD NO-VBG NO-VBN NO-VBP NO-VBZ NO-VB' means that if no verb is in
+# the sentence, it is considered bad
+# The rule DIFF-3 says the rule passes if the sentence only has 3 unique tags
+rules = ['VBD VBD', 'NNP NNS', 'VBD NNS', 'WRB VBD', 'NO-VBD NO-VBG NO-VBN \
+    NO-VBP NO-VBZ NO-VB NO-JJ', 'MAXLEN-8 VBZ VBN', 'UNREQ-. UNREQ-, DIFF-2']
 
 # Check if the rule is present.
 def apply_rule(rule, tags):
@@ -22,10 +25,32 @@ def apply_rule(rule, tags):
   tokens = rule.split()
   for token in tokens:
     token = token.strip()
-    if token not in tags:
-      return False
+    # If NO- is in the rule, then that tag must not be present for the rule to pass.
+    if 'NO-' in token:
+      if token.split('-')[1] in tags:
+        return False
+
+    # To pass, aka be a good sentence, the tag count should be <= to this number
+    elif 'MAXLEN-' in token:
+      if len(tags) > int(token.split('-')[1]):
+        return False
+
+    elif 'DIFF-' in token:
+      size = int(token.split('-')[1])
+      if len(set(tags)) > size:
+        return False
+
+    elif 'UNREQ-' in token:
+      if token.split('-')[1] in tags:
+        # Remove all occurences of this.
+        tags = filter (lambda a: a != token.split('-')[1], tags)
+
+    # Tag must be present for the rule to pass.
     else:
-      tags.remove(token)
+      if token not in tags:
+        return False
+      else:
+        tags.remove(token)
   # If we get to here, then the rules is present
   return True
 
@@ -44,6 +69,7 @@ mislabelled_good_list = []
 rule_stats = {}
 correct_stats = {}
 prev_rule = ''
+labelled_good = []
 
 for rule in rules:
   rule_stats[rule]  = []
@@ -73,6 +99,8 @@ for item in training_data:
 
     if item == prev_answer:
       correct = correct + 1
+      if item == 'Good':
+        labelled_good.append(prev_sentence)
       # Check if there was a rule that was applied
       if prev_rule != '':
         if prev_rule in correct_stats:
@@ -117,6 +145,12 @@ for key in rule_stats:
   for item in rule_stats[key]:
     print item
   print ""
+
+print "*******************************"
+print "******ALL GOOD SENTENCES*******"
+print "*******************************"
+for sentence in labelled_good:
+  print sentence
 
 sys.exit()
 
