@@ -13,8 +13,12 @@ def generateSoccerQuestions(content, tagged_sentences):
 def generateMovieQuestions(content, tagged_sentences):
   # Generate questions based on the cast members.
   to_return = []
-  cast_begin = content.index("Cast\n")
+  cast_begin = content.find("Cast\n")
+  if cast_begin == -1:
+    return to_return
   cast_end = cast_begin + content[cast_begin:].index("\n\n\n")
+  if cast_end == -1:
+    return to_return
   cast = content[cast_begin:cast_end]
   cast_lines = cast.split('\n')
   for item in cast_lines:
@@ -30,7 +34,6 @@ def generateConstellationQuestions(content, tagged_sentences):
   entity = extractEntity(content)
   if 'brightest' in content:
     to_return.append('[SPECIFIC] Name some of the brightest star(s) in ' + entity)
-
   return to_return
 
 def generateLanguageQuestions(content, tagged_sentences):
