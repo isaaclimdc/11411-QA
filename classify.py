@@ -7,12 +7,14 @@ if len(sys.argv) < 2:
   print "Usage: python classify.py train_classifier"
   sys.exit()
 
+print "Running..."
+
 # A list of bad rules.
 # For example, if NNP and NNS are POS tags of the same sentence, then the rule
 # is present (or) if there are two VBD rules in the same sentence, the rule
 # is present.
 #rules = ['NNP NNS', 'VBD NNS', 'VBD VBD']
-rules = ['VBD VBD', 'NNP NNS', 'VBD NNS']
+rules = ['VBD VBD', 'NNP NNS', 'VBD NNS', 'WRB VBD']
 
 # Check if the rule is present.
 def apply_rule(rule, tags):
@@ -23,7 +25,6 @@ def apply_rule(rule, tags):
     if token not in tags:
       return False
     else:
-      print "Removing"
       tags.remove(token)
   # If we get to here, then the rules is present
   return True
@@ -40,6 +41,13 @@ correct = 0
 mislabelled_good = 0
 bad_count = 0
 mislabelled_good_list = []
+rule_stats = {}
+correct_stats = {}
+prev_rule = ''
+
+for rule in rules:
+  rule_stats[rule]  = []
+
 for item in training_data:
   item = item.strip()
   i = i+1
@@ -49,23 +57,39 @@ for item in training_data:
     tag_tuples = nltk.pos_tag(tokens)
     tags = [y for x,y in tag_tuples]
     prev_answer = 'Good'
+    prev_rule = ''
     for rule in rules:
       if apply_rule(rule, tags):
         prev_answer = 'Bad'
+        prev_rule = rule
         break
 
   if i % 3 == 1:
-    print prev_sentence
-    print "Actual: " + item
-    print "Guess: " + prev_answer
+    #print prev_sentence
+    #print "Actual: " + item
+    #print "Guess: " + prev_answer
     if item == 'Bad':
       bad_count = bad_count + 1
 
     if item == prev_answer:
       correct = correct + 1
+      # Check if there was a rule that was applied
+      if prev_rule != '':
+        if prev_rule in correct_stats:
+          correct_stats[prev_rule] = correct_stats[prev_rule] + 1
+        else:
+          correct_stats[prev_rule] = 1
+
+    # Mislabelled a bad sentence as good
     elif item == 'Bad':
       mislabelled_good = mislabelled_good + 1
       mislabelled_good_list.append(prev_sentence)
+
+    # Mislabelled a good sentence as bad
+    elif item == 'Good':
+      if prev_rule != '':
+        rule_stats[prev_rule].append(prev_sentence)
+
     total = total + 1
 
 print "***********"
@@ -76,6 +100,23 @@ print "Mislabelled " + str(mislabelled_good) + " as Good out of " + str(bad_coun
 print "Mislabelled these Bad sentences as Good"
 for item in mislabelled_good_list:
   print item
+
+print "***RULE STATS***"
+print "Here are all the good sentences labelled bad"
+for key in rule_stats:
+  print "*************"
+  print "Rule: " + key
+  print "Mislabelled bad: " + str(len(rule_stats[key]))
+  if key in correct_stats:
+    print "Bad sentences that this rule helped remove " + str(correct_stats[key])
+  else:
+    print "ERRRRROR. This rule didn't help remove any bad sentences."
+
+  print "*************"
+  print "Here are the good sentences mislabelled bad"
+  for item in rule_stats[key]:
+    print item
+  print ""
 
 sys.exit()
 
