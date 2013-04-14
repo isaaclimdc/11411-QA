@@ -7,49 +7,65 @@ if len(sys.argv) < 2:
   print "Usage: python classify.py train_classifier"
   sys.exit()
 
+# A list of bad rules.
+# For example, if NNP and NNS are POS tags of the same sentence, then the rule
+# is present (or) if there are two VBD rules in the same sentence, the rule
+# is present.
+#rules = ['NNP NNS', 'VBD NNS', 'VBD VBD']
+rules = ['VBD VBD', 'NNP NNS', 'VBD NNS']
+
+# Check if the rule is present.
+def apply_rule(rule, tags):
+  tags = tags[:]
+  tokens = rule.split()
+  for token in tokens:
+    token = token.strip()
+    if token not in tags:
+      return False
+    else:
+      print "Removing"
+      tags.remove(token)
+  # If we get to here, then the rules is present
+  return True
+
 train_in = open(sys.argv[1])
 training_data = train_in.readlines()
 train_in.close()
 
-if True:
-  prev_answer = ''
-  prev_sentence = ''
-  i = -1
-  total = 0
-  correct = 0
-  mislabelled_good = 0
-  bad_count = 0
-  mislabelled_good_list = []
-  for item in training_data:
-    item = item.strip()
-    i = i+1
-    if i % 3 == 0:
-      prev_sentence = item
-      tokens = nltk.word_tokenize(item)
-      tag_tuples = nltk.pos_tag(tokens)
-      words, tags = zip(*tag_tuples)
-      prev_answer = 'Good'
+prev_answer = ''
+prev_sentence = ''
+i = -1
+total = 0
+correct = 0
+mislabelled_good = 0
+bad_count = 0
+mislabelled_good_list = []
+for item in training_data:
+  item = item.strip()
+  i = i+1
+  if i % 3 == 0:
+    prev_sentence = item
+    tokens = nltk.word_tokenize(item)
+    tag_tuples = nltk.pos_tag(tokens)
+    tags = [y for x,y in tag_tuples]
+    prev_answer = 'Good'
+    for rule in rules:
+      if apply_rule(rule, tags):
+        prev_answer = 'Bad'
+        break
+  if i % 3 == 1:
+    print prev_sentence
+    print "Actual: " + item
+    print "Guess: " + prev_answer
+    if item == 'Bad':
+      bad_count = bad_count + 1
 
-      # Rules which result in malformed sentences
-      if tags.count('NNP') >= 1 and tags.count('NNS') >= 1:
-        prev_answer = 'Bad'
-      if tags.count('VBD') >= 1 and tags.count('NNS') >= 1:
-        prev_answer = 'Bad'
-      if tags.count('VBD') >= 2:
-        prev_answer = 'Bad'
-    if i % 3 == 1:
-      print prev_sentence
-      print "Actual: " + item
-      print "Guess: " + prev_answer
-      if item == 'Bad':
-        bad_count = bad_count + 1
-
-      if item == prev_answer:
-        correct = correct + 1
-      elif item == 'Bad':
-        mislabelled_good = mislabelled_good + 1
-        mislabelled_good_list.append(prev_sentence)
-      total = total + 1
+    if item == prev_answer:
+      correct = correct + 1
+    elif item == 'Bad':
+      mislabelled_good = mislabelled_good + 1
+      mislabelled_good_list.append(prev_sentence)
+    total = total + 1
 
 print "***********"
 print "***STATS***"
