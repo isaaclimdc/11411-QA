@@ -726,16 +726,18 @@ def generateQuestions(tagged_sentences, original_file):
   return cleaned_questions
 
 def rankQuestions(questions, file_path):
+  to_return = []
   ranked_questions = rank(questions)
   # Write ranked questions to a file.
   if not os.path.exists('rank'):
     os.makedirs('rank')
   rank_file = open('rank/rank_' + ntpath.basename(file_path), 'w')
   for ranked_question in ranked_questions:
-    rank_file.write(str(ranked_question[1]) + ' ' + ranked_question[0] +'\n')
+    to_return.append(ranked_question[0])
+    rank_file.write(str(ranked_question[1]) + " " + ranked_question[0] + '\n')
   rank_file.close()
 
-  return ranked_questions
+  return to_return
 
 # Write questions to file.
 def writeQuestions(questions, file_path):
@@ -861,7 +863,8 @@ if __name__ == '__main__':
   log("~ DONE!\n")
 
   log("~ Printing questions to stdout...")
-  print best_questions
+  for question in best_questions:
+    print question
 
   log("~ DONE!\n")
 

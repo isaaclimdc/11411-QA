@@ -20,8 +20,9 @@ def generateMovieQuestions(content, tagged_sentences):
   for item in cast_lines:
     if ' as ' in item:
       entity = item.split(' as ', 1)[0].strip()
-      question = "[SPECIFIC] Who did " + entity + " play?"
-      to_return.append(question)
+      if len(entity.split()) <= 2:
+        question = "[SPECIFIC] Who did " + entity + " play?"
+        to_return.append(question)
   return to_return
 
 def generateConstellationQuestions(content, tagged_sentences):
