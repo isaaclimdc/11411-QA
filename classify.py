@@ -3,14 +3,13 @@
 import sys, os, collections, re
 import nltk
 
+if len(sys.argv) < 2:
+  print "Usage: python classify.py train_classifier"
+  sys.exit()
+
 train_in = open(sys.argv[1])
 training_data = train_in.readlines()
 train_in.close()
-
-#test_in = open(sys.argv[2])
-#testing_data = test_in.readlines()
-#test_in.close()
-
 
 if True:
   prev_answer = ''
@@ -49,10 +48,12 @@ print "Got " + str(correct) + " out of " + str(total) + " correct."
 print "Mislabelled " + str(mislabelled_good) + " as Good out of " + str(bad_count) + " bad questions"
 
 sys.exit()
+
 # DEAD CODE BEYOND THIS POINT
+# TRIED A NAIVE BAYES CLASSIFIER
+# DID NOT WORK OUT
 testing_data = training_data[-41:]
 training_data = training_data[:-41]
-
 
 print "Training classifier..."
 pos_tags = []
