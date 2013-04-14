@@ -11,8 +11,48 @@ train_in.close()
 #testing_data = test_in.readlines()
 #test_in.close()
 
+
+if True:
+  prev_answer = ''
+  prev_sentence = ''
+  i = -1
+  total = 0
+  correct = 0
+  mislabelled_good = 0
+  bad_count = 0
+  for item in training_data:
+    item = item.strip()
+    i = i+1
+    if i % 3 == 0:
+      prev_sentence = item
+      tokens = nltk.word_tokenize(item)
+      tag_tuples = nltk.pos_tag(tokens)
+      words, tags = zip(*tag_tuples)
+      prev_answer = 'Good'
+      if tags.count('NNP') >= 1 and tags.count('NNS') >= 1:
+        prev_answer = 'Bad'
+    if i % 3 == 1:
+      print prev_sentence
+      print "Actual: " + item
+      print "Guess: " + prev_answer
+      if item == 'Bad':
+        bad_count = bad_count + 1
+
+      if item == prev_answer:
+        correct = correct + 1
+      elif item == 'Bad':
+        mislabelled_good = mislabelled_good + 1
+      total = total + 1
+
+print "***STATS***"
+print "Got " + str(correct) + " out of " + str(total) + " correct."
+print "Mislabelled " + str(mislabelled_good) + " as Good out of " + str(bad_count) + " bad questions"
+
+sys.exit()
+# DEAD CODE BEYOND THIS POINT
 testing_data = training_data[-41:]
 training_data = training_data[:-41]
+
 
 print "Training classifier..."
 pos_tags = []
