@@ -2,10 +2,10 @@
 libraries/*
 !libraries/nltk_helper.py
 
-# Ignores results of the ask
-ask/questions/*
-ask/tagged/*
-ask/rank/*
+# Ignores results of ask
+ask_files/questions/*
+ask_files/tagged/*
+ask_files/rank/*
 test_data/*
 
 #Misc stuff
