@@ -18,15 +18,14 @@ INITIAL_CONFIDENCE = 0
 def generate_confidence(question):
 
   confidence = INITIAL_CONFIDENCE;
-  question = question.lower()
 
   # Generic and specific questions are very good by default. I subtract two from
   # the score to rank specific questions higher than generic questions. Also, if
   # we've generated a VERY_GOOD_QUESTION by some other means, this ensures it is
   # ranked higher than the generic and specific questions.
-  if '[generic]' in question:
+  if '[GENERIC]' in question:
     return VERY_GOOD_QUESTION - 2
-  if '[specific]' in question:
+  if '[SPECIFIC]' in question:
     return VERY_GOOD_QUESTION - 1
 
   # Get rid of question label.

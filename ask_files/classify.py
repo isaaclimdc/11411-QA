@@ -13,17 +13,6 @@ import nltk
 rules = ['VBD VBD', 'NNP NNS', 'VBD NNS', 'WRB VBD', 'NO-VBD NO-VBG NO-VBN \
     NO-VBP NO-VBZ NO-VB NO-JJ', 'MAXLEN-8 VBZ VBN', 'UNREQ-. UNREQ-, DIFF-2']
 
-# Rate a particular sentence as Good or Bad. Used by the ranker to rank
-# sentences.
-def rate_sentence(sentence):
-  tokens = nltk.word_tokenize(sentence)
-  tag_tuples = nltk.pos_tag(tokens)
-  tags = [y for x,y in tag_tuples]
-  for rule in rules:
-    if apply_rule(rule, tags):
-      return "Bad"
-  return "Good"
-
 # Check if the rule is present.
 def apply_rule(rule, tags):
   tags = tags[:]
@@ -59,6 +48,16 @@ def apply_rule(rule, tags):
   # If we get to here, then the rules is present
   return True
 
+# Rate a particular sentence as Good or Bad. Used by the ranker to rank
+# sentences.
+def rate_sentence(sentence):
+  tokens = nltk.word_tokenize(sentence)
+  tag_tuples = nltk.pos_tag(tokens)
+  tags = [y for x,y in tag_tuples]
+  for rule in rules:
+    if apply_rule(rule, tags):
+      return "Bad"
+  return "Good"
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
