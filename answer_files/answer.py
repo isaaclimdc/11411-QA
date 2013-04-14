@@ -4,6 +4,7 @@ import logging, os, sys, string, re
 lib_path = os.path.abspath('../libraries')
 sys.path.append(lib_path)
 from nltk_helper import splitIntoSentences2, getSynonyms
+from random import randint
 
 # Print only to stderr
 def log(s):
@@ -23,7 +24,8 @@ WORD_THRESHOLD = 2
 # Synonym dict. Reset for every question.
 glob_syn_dict = dict()
 
-
+NO_VARS = ["No.", "Nope.", "That's a negative!"]
+YES_VARS = ["Yes.", "Yup.", "Yes indeed!", "Definitely.", "Certainly."]
 
 ##############################
 ###### Helper functions ######
@@ -35,7 +37,13 @@ def splitSentence(sentence):
     s[i] = s[i].strip()
   return s
 
+def genYesAns():
+  r = randint(0, len(YES_VARS)-1)
+  return YES_VARS[r]
 
+def genNoAns():
+  r = randint(0, len(NO_VARS)-1)
+  return NO_VARS[r]
 
 #################################
 ###### Levenshtein-Damerau ######
@@ -181,6 +189,32 @@ def makeSentenceArray(inputFile):
   sentences = filter(lambda s: len(s) > 0, sentences)
   return sentences
 
+def isYesNoQuestion(question):
+  parts = question.split()
+  if parts[0].lower() == "is" or \
+     parts[0].lower() == "did" or \
+     parts[0].lower() == "has":
+    return True
+  return False
+
+def isNoQuestion(question, answer):
+  if "not" in question:
+    if "not" in answer:
+      return False
+    else:
+      return True
+  else:
+    return False
+
+def processAnswer(closestSentence, question):
+  if isYesNoQuestion(question):
+    if isNoQuestion(question, closestSentence):
+      return genNoAns()
+    else:
+      return genYesAns()
+  else:
+    return closestSentence
+
 def computeDistances(articleFile, questionFile):
   global glob_syn_dict
   answerArray = splitIntoSentences2(articleFile)
@@ -198,7 +232,6 @@ def computeDistances(articleFile, questionFile):
     # print 'Synonym Dict \n', glob_syn_dict
 
     # Compute best answer.
-    closestAnswer = ""
     sentenceDistance = float("infinity")
     memo = dict()
     for answer in answerArray:
@@ -210,11 +243,13 @@ def computeDistances(articleFile, questionFile):
         closestSentence = answer
         sentenceDistance = count
 
+    answer = processAnswer(closestSentence, question)
+
     log("-------")
     log("Question sentence:")
     log(question)
     log("Answer:")
-    print(closestSentence)
+    print(answer)
     log("Damerau distance:")
     log(str(sentenceDistance))
     log("-------")
@@ -222,8 +257,6 @@ def computeDistances(articleFile, questionFile):
     # Reset synonym dict.
     glob_syn_dict = dict()
 
-# TODO(mburman): use the logging module instead of prints
-# TODO(mburman): let user specify logging level
 if __name__ == '__main__':
   if len(sys.argv) < 3:
     print 'Usage: ./answer.py <article_text> <questions_text>\n'
