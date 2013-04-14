@@ -1,5 +1,5 @@
 # To use
-# python classify.py train test
+
 import sys, os, collections, re
 import nltk
 
@@ -19,6 +19,7 @@ if True:
   correct = 0
   mislabelled_good = 0
   bad_count = 0
+  mislabelled_good_list = []
   for item in training_data:
     item = item.strip()
     i = i+1
@@ -28,7 +29,13 @@ if True:
       tag_tuples = nltk.pos_tag(tokens)
       words, tags = zip(*tag_tuples)
       prev_answer = 'Good'
+
+      # Rules which result in malformed sentences
       if tags.count('NNP') >= 1 and tags.count('NNS') >= 1:
+        prev_answer = 'Bad'
+      if tags.count('VBD') >= 1 and tags.count('NNS') >= 1:
+        prev_answer = 'Bad'
+      if tags.count('VBD') >= 2:
         prev_answer = 'Bad'
     if i % 3 == 1:
       print prev_sentence
@@ -41,11 +48,17 @@ if True:
         correct = correct + 1
       elif item == 'Bad':
         mislabelled_good = mislabelled_good + 1
+        mislabelled_good_list.append(prev_sentence)
       total = total + 1
 
+print "***********"
 print "***STATS***"
+print "***********"
 print "Got " + str(correct) + " out of " + str(total) + " correct."
 print "Mislabelled " + str(mislabelled_good) + " as Good out of " + str(bad_count) + " bad questions"
+print "Mislabelled these Bad sentences as Good"
+for item in mislabelled_good_list:
+  print item
 
 sys.exit()
 
