@@ -53,6 +53,7 @@ for item in training_data:
       if apply_rule(rule, tags):
         prev_answer = 'Bad'
         break
+
   if i % 3 == 1:
     print prev_sentence
     print "Actual: " + item
