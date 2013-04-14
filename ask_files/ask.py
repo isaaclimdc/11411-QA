@@ -581,7 +581,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
     # the length of the returned word array will be
     # zero and we will move on to the next sentence.
     words = fixCoreferences(words)
-    #log "orig sentence ", sentence   
+    #log "orig sentence ", sentence
     i = 0
     is_no_question = False
     has_neg_word = False
@@ -612,9 +612,9 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
         # Can make a yes/no question by moving verb
         # to the beginning of the segment.
         # Counterexample for NNS
-        # The official constellation/NN boundaries/NNS, as set... 
-        if (hasTag(words[i], "/VBZ") or hasTag(words[i], "/VBP") 
-          or hasTag(words[i], "/VBD")):  
+        # The official constellation/NN boundaries/NNS, as set...
+        if (hasTag(words[i], "/VBZ") or hasTag(words[i], "/VBP")
+          or hasTag(words[i], "/VBD")):
           if hasTag(words[i], "/VBZ"):
             did_phrase = ["does"]
           else:
@@ -631,7 +631,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
           if is_no_question:
             words = words[:i] + ["not"] + words[i:]
             i +=1
-          if not (hasTag(words[0], PERSON_TAG) or 
+          if not (hasTag(words[0], PERSON_TAG) or
                   hasTag(words[0], ORGANIZATION_TAG) or
                   hasTag(words[0], LOCATION_TAG) or
                   hasTag(words[0], "/NNP")):
@@ -646,7 +646,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
             question_parts = pre_segment + did_phrase + words
           for j in xrange(i+1,len(question_parts)):
             if (hasTag(question_parts[j], "/CC") #and hasTag(question_parts[j-1],'/,')
-               and not (hasTag(question_parts[j+1], "/JJ") or 
+               and not (hasTag(question_parts[j+1], "/JJ") or
                         hasTag(question_parts[j-1], PERSON_TAG))):
               question_parts = question_parts[:j]
               break
@@ -655,7 +655,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
           question_parts[1] = question_parts[1].title()
           question = putInQuestionFormat(question_parts)
           if is_no_question:
-            log("NOOOO "+question) 
+            log("NOOOO "+question)
           yes_no_questions.append(question)
           break
       i+=1
@@ -703,7 +703,7 @@ def cleanQuestion(question):
   return question
 
 def generateQuestions(tagged_sentences, original_file):
-  retag_entities = ["Aries/Aries/NNP/PERSON", "Segue/Segue/NNP/PERSON", 
+  retag_entities = ["Aries/Aries/NNP/PERSON", "Segue/Segue/NNP/PERSON",
                     "Dementor/Dementor/NNP/PERSON" , "Dementors/Dementors/NNP/PERSON",
                     "Posh/Posh/NNP/PERSON"]
   questions = []
@@ -864,7 +864,9 @@ if __name__ == '__main__':
 
   log("~ Printing questions to stdout...")
   for question in best_questions:
-    print question
+    replace_regex = re.compile('^\[.*\]', re.IGNORECASE)
+    cleaned_question = replace_regex.sub('', question)
+    print cleaned_question.strip()
 
   log("~ DONE!\n")
 

@@ -59,9 +59,7 @@ def rank(questions):
   confidence_map = {}
   for question in questions:
     question = question.strip()
-    replace_regex = re.compile('^\[.*\]', re.IGNORECASE)
-    cleaned_question = replace_regex.sub('', question)
-    confidence_map[cleaned_question.strip()] = generate_confidence(question)
+    confidence_map[question] = generate_confidence(question)
 
   # Sort into tuple (question, score).
   sorted_questions = sorted(confidence_map.iteritems(), key=operator.itemgetter(1))
