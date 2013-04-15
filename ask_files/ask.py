@@ -280,7 +280,7 @@ def makeWhoQuestion(words, question_parts):
 
 # Find sentences that we can turn into
 # simple 'who' questions.
-def makeWhoQuestions(sentences, retag_phrases):
+def makeWhoQuestions(sentences, retag_phrases, content):
   who_questions = []
   for sentence in sentences:
     if isHeader(sentence):
@@ -292,11 +292,16 @@ def makeWhoQuestions(sentences, retag_phrases):
 
     # Reject questions shorter than length 5
     if len(words) >= 5:
-      if hasTag(words[0], PERSON_TAG):
-        words = retagWords(words, retag_phrases)
-        question = makeWhoQuestion(words, ['Who'])
+      words = retagWords(words, retag_phrases)
+      if hasTag(words[0], PERSON_TAG) or hasTag(words[0], WHAT_TAG):
+        # For constellations, just make What questions
+        if isConstellation(content):
+          question = makeWhoQuestion(words, ['What'])
+        else:
+          question = makeWhoQuestion(words, ['Who'])
         question = cleanQuestion(question)
         who_questions.append(question)
+
      # else:
      #   against_question = False
      #   comma_found = False
@@ -808,7 +813,7 @@ def generateQuestions(tagged_sentences, original_file):
     retag_entities.append(entity + '/' + WHAT_TAG)
 
   questions = []
-  questions += makeWhoQuestions(tagged_sentences, retag_entities)
+  questions += makeWhoQuestions(tagged_sentences, retag_entities, content)
   questions += makeWhenQuestions(tagged_sentences)
   questions += makeWhereQuestions(tagged_sentences)
   questions += makeQuoteQuestions(tagged_sentences)
