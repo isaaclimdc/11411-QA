@@ -50,6 +50,8 @@ def generate_confidence(question):
     confidence += VERY_GOOD_QUESTION
   elif rating == "Bad":
     confidence += VERY_BAD_QUESTION
+  elif rating == "Ok":
+    confidence += BAD_ATTRIBUTE
 
   return confidence
 
