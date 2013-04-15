@@ -261,16 +261,14 @@ def makeWhoQuestion(words, question_parts):
   for j in xrange(i, len(words)):
     question_parts.append(words[j])
 
-
-  for word in words:
-    if hasTag(word, WHAT_TAG):
-      if question_parts > 2:
-        question_parts[0] = "What"
-        question_parts.pop(1)
-        question_parts = ["[***What***]"] + question_parts
-        print "WHAT TAG!!!!"
-        question = putInQuestionFormat(question_parts)
-        return question
+  if hasTag(words[0], WHAT_TAG):
+    if question_parts > 2:
+      question_parts[0] = "What"
+      question_parts.pop(1)
+      question_parts = ["[***What***]"] + question_parts
+      print "WHAT TAG!!!!"
+      question = putInQuestionFormat(question_parts)
+      return question
 
   if containsKeyRootWords(words, ['star']):
     question_parts[0] = "What"
