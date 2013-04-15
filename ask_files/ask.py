@@ -258,19 +258,13 @@ def makeWhoQuestion(words, question_parts):
       break
   found_verb = False
   for j in xrange(i, len(words)):
-    #if (hasTag(words[j], VERB_TAG_1) or hasTag(words[j], VERB_TAG_2)) and not found_verb:
-      #words[j] = fixTense(words[j])
-      #found_verb = True
-    #word = removeTag(words[j])
-    #if appendToPreviousWord(word):
-     # prev_word = question_parts[len(question_parts)-1]
-     # question_parts[len(question_parts)-1] = prev_word + word
-    #else:
     question_parts.append(words[j])
 
   if containsKeyRootWords(words, ['star']):
     question_parts[0] = "What"
-  #question_parts = question_parts + words
+    question_parts = ["[What]"] + question_parts
+  else:
+    question_parts = ["[Who]"] + question_parts
   question = putInQuestionFormat(question_parts)
   return question
 
@@ -292,23 +286,22 @@ def makeWhoQuestions(sentences):
         question = makeWhoQuestion(words, ['Who'])
         question = cleanQuestion(question)
         who_questions.append(question)
-      else:
-        against_question = False
-        comma_found = False
-        for i in xrange(len(words)):
-          if hasTag(words[i], '/IN') and hasTag(words[i], '/against'):
-            against_question = True
-          elif hasTag(words[i], '/,') and against_question:
-            question_words = words[i + 1 : ]
+     # else:
+     #   against_question = False
+     #   comma_found = False
+     #   for i in xrange(len(words)):
+     #     if hasTag(words[i], '/IN') and hasTag(words[i], '/against'):
+     #       against_question = True
+     #     elif hasTag(words[i], '/,') and against_question:
+     #       question_words = words[i + 1 : ]
             # TODO(sjoyner): We need to figure out what this word refers to as this is
             # what the question is about
-            if hasTag(question_words[0], '/PRP'):
-              question_words = question_words[1 : ]
-            question = makeWhoQuestion(question_words, ['Against', 'who', 'did', 'THING'])
-            question = cleanQuestion(question)
-            # log(question)
-            who_questions.append(question)
-            break
+     #       if hasTag(question_words[0], '/PRP'):
+     #         question_words = question_words[1 : ]
+     #       question = makeWhoQuestion(question_words, ['Against', 'who', 'did', 'THING'])
+     #       question = cleanQuestion(question)
+     #       who_questions.append(question)
+     #       break
   return who_questions
 
 
@@ -332,6 +325,7 @@ def makeWhereDidQuestion(words, start_index, end_index):
       question_parts.append(word)
 
   question = putInQuestionFormat(question_parts)
+  log(question+"\n")
   return question
 
 def containsSpecialCase(words, key_phrase):
@@ -353,31 +347,115 @@ def makeWhereQuestions(sentences):
     sentence = sentence.strip()
     if isHeader(sentence):
       continue
-
     words = sentence.split()
-
-    words = truncateSentence(words)
+    words = fixCoreferences(words)
+    #words = truncateSentence(words)
     index = -1
     # Some where questions have the format
     # In LOCATION, this event occurred
-    if len(words) > 0 and hasTag(words[0], 'In') and hasTag(words[0], '/IN'):
-      foundLocation = False
-      foundComma = False
-      for i in xrange(len(words)):
-        if hasTag(words[i], LOCATION_TAG) or hasTag(words[i], ORGANIZATION_TAG):
-          foundLocation = True
-        # Found a potential question
-        elif hasTag(words[i], ','):
-          if foundLocation:
-            foundComma = True
-        elif hasTag(words[i], PERSON_TAG) or hasTag(words[i], ORGANIZATION_TAG):
-          if foundComma:
-            index = i
+    #if len(words) > 0 and hasTag(words[0], 'In') and hasTag(words[0], '/IN'):
+    #  foundLocation = False
+    #  foundComma = False
+    #  for i in xrange(len(words)):
+    #    if hasTag(words[i], LOCATION_TAG) or hasTag(words[i], ORGANIZATION_TAG):
+    #      foundLocation = True
+    #    # Found a potential question
+    #    elif hasTag(words[i], ','):
+    #      if foundLocation:
+    #        foundComma = True
+    #    elif hasTag(words[i], PERSON_TAG) or hasTag(words[i], ORGANIZATION_TAG):
+    #      if foundComma:
+    #        index = i
+    #        break
+    #if index != -1:
+    #  question = makeWhereDidQuestion(words, index, len(words))
+    #  question = cleanQuestion(question)
+    #  where_questions.append(question)
+    #else:
+    verb_index = -1
+    found_potential_location = False
+    include_in_word = False
+    i = 0
+
+    intro_part = ["[WHERE]", "Where"]
+    while i < len(words):
+      if hasRootWord(words[i], "in"):
+        # If the next word has a location tag, then this
+        # is a where question
+        found_potential_location = True
+      elif hasRootWord(words[i], "at") and hasRootWord(words[i+1], "the"):
+        found_potential_location = True
+        i+=1
+      elif hasRootWord(words[i], "from"):
+        found_potential_location = True
+        include_in_word = True
+        if hasRootWord(words[i-1], "light-year"):
+          intro_part = ["[WHAT]", "What"]
+      elif hasTag(words[i], "/VB") and verb_index == -1:
+        verb_index = i
+      elif ((hasTag(words[i], LOCATION_TAG) or hasTag(words[i], ORGANIZATION_TAG))
+              and found_potential_location):
+        if verb_index == -1:
+          comma_found = False
+          while i < len(words):
+            if hasTag(words[i], "/,"):
+              if not ((hasTag(words[i-1], ORGANIZATION_TAG) or
+                       hasTag(words[i-1], LOCATION_TAG)) and
+                      (hasTag(words[i+1], ORGANIZATION_TAG) or
+                        hasTag(words[i+1], LOCATION_TAG))):
+                comma_found = True
+                break
+            i+=1
+          if not comma_found:
             break
-    if index != -1:
-      question = makeWhereDidQuestion(words, index, len(words))
-      question = cleanQuestion(question)
-      where_questions.append(question)
+
+          words = truncateSentence(words[i+1:])
+          for j in range(len(words)):
+            if hasTag(words[j], "/VB"):
+              verb_index = j
+              break
+        if hasTag(words[verb_index], "/VBD") and not hasRootWord(words[verb_index], "be"):
+          if hasTag(words[0], PERSON_TAG) or hasTag(words[0], LOCATION_TAG):
+            question_parts = ["did"] + [words[0]]  
+          else:
+            question_parts = ["did"] + [words[0].lower()]
+          question_parts = question_parts + words[1:verb_index] + [fixTense(words[verb_index])]
+        else:
+          question_parts = [words[verb_index]] + words[:verb_index]
+          if not (hasTag(question_parts[1], PERSON_TAG) or hasTag(question_parts[1], LOCATION_TAG)):
+            question_parts[1] = question_parts[1].lower()
+        if include_in_word:
+          question_parts = question_parts + words[verb_index+1:i]
+        else:
+          question_parts = question_parts + words[verb_index+1:i-1]
+        question_parts = intro_part + question_parts
+        question = putInQuestionFormat(question_parts)
+        where_questions.append(question)
+        log("words" +  ' '.join(words) + "\n")
+        log("question" + question + "\n")
+        break
+      elif found_potential_location:
+        found_potential_location = False
+      i+=1
+    
+  #found_verb = False
+  #for i in xrange(start_index, end_index):
+  #  if (hasTag(words[i], VERB_TAG_1) or hasTag(words[i], VERB_TAG_2)) and not found_verb:
+  #    words[i] = fixTense(words[i])
+  #    foundVerb = True
+  #  word = removeTag(words[i])
+  #  if appendToPreviousWord(word):
+  #    prev_word = question_parts[-1]
+  #    question_parts[-1] = prev_word + word
+  #  else:
+  #    question_parts.append(word)
+#
+#  question = putInQuestionFormat(question_parts)
+  return where_questions
+
+
+    
+    
     # Special case time!
 #    else:
  #     index = containsSpecialCase(words, ['grow', 'up'])
@@ -627,7 +705,7 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
           i = i - index
           if not has_neg_word:
             rand = random.random()
-            is_no_question = rand > 0.5
+            is_no_question = rand > 0.8
           if is_no_question:
             words = words[:i] + ["not"] + words[i:]
             i +=1
@@ -650,12 +728,12 @@ def makeYesNoQuestion(tagged_sentences, retag_phrases):
                         hasTag(question_parts[j-1], PERSON_TAG))):
               question_parts = question_parts[:j]
               break
-          question_parts= ['[YES]'] + question_parts
-
+          if is_no_question:
+            question_parts = ['[NO]'] + question_parts
+          else:
+            question_parts = ['[YES]'] + question_parts
           question_parts[1] = question_parts[1].title()
           question = putInQuestionFormat(question_parts)
-          if is_no_question:
-            log("NOOOO "+question)
           yes_no_questions.append(question)
           break
       i+=1
@@ -815,28 +893,6 @@ def preprocessFile(file_path):
     line = ' '.join(strip_sentences) + '\n'
     preprocess_text.write(line)
     i += 1
-    #  for j in range(len(line)):
-    #    if line[j] == '"':
-    #      index = line.find('"', j+1)
-    #      line = line[:j-1] + line[index+1:]
-    #      break
-    #  words = line.split()
-    #  j = 0
-#      log line
-    #  for j in range(len(words)):
-    #    if words[j].startswith('('):
-    #      words[j-1] = words[j-1] + ','
-    #      words[j] = words[j][1:]
-    #    elif words[j].endswith(')'):
-    #      words[j] = words[j][:len(words[j])-1] + ','
-    #  line = ' '.join(words)
-    #if line == "See also":
-    #  break
-   # Remove everything after See also.'
-    #if line == 'See also.\n':
-    #  break
-    #preprocess_text.write(line)
-    #i+=1
   file_text.close()
   preprocess_text.close()
   return relative_preprocess_path
