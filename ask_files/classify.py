@@ -10,7 +10,11 @@ import nltk
 # The rule 'NO-VBD NO-VBG NO-VBN NO-VBP NO-VBZ NO-VB' means that if no verb is in
 # the sentence, it is considered bad
 # The rule DIFF-3 says the rule passes if the sentence only has 3 unique tags
-rules = ['VBD VBD', 'NNP NNS', 'VBD NNS', 'WRB VBD', 'NO-VBD NO-VBG NO-VBN \
+
+# These are strong rules and remove a lot of good sentences too
+ok_rules = ['NNP NNS', 'VBD NNS']
+
+rules = ['VBD VBD', 'WRB VBD', 'NO-VBD NO-VBG NO-VBN \
     NO-VBP NO-VBZ NO-VB NO-JJ', 'MAXLEN-8 VBZ VBN', 'UNREQ-. UNREQ-, DIFF-2',
 
     'CONT-VBZ-CC-NNP', 'CONT-VBZ-CC-NNS',
@@ -110,6 +114,9 @@ def rate_sentence(sentence):
   for rule in rules:
     if apply_rule(rule, tags):
       return "Bad"
+  for rule in ok_rules:
+    if apply_rule(rule, tags):
+      return "Ok"
   return "Good"
 
 if __name__ == '__main__':

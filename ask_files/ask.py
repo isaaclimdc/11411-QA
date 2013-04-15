@@ -57,6 +57,7 @@ VERB_TAG_2 = "/VBG"
 PRESENT_TENSE = "PRESENT_TENSE"
 PAST_TENSE = "PAST_TENSE"
 
+global_entity = ''
 
 ##############################
 ###### Helper functions ######
@@ -809,6 +810,8 @@ def generateQuestions(tagged_sentences, original_file):
   f.close()
 
   entity = extractEntity(content)
+  global global_entity
+  global_entity = entity
   if isConstellation(content) or isProgrammingLanguage(content):
     print "**RETAGGING**"
     retag_entities.append(entity + '/' + WHAT_TAG)
@@ -832,9 +835,9 @@ def generateQuestions(tagged_sentences, original_file):
     cleaned_questions.append(cleanQuestion(question))
   return cleaned_questions
 
-def rankQuestions(questions, file_path):
+def rankQuestions(questions, file_path, entity):
   to_return = []
-  ranked_questions = rank(questions)
+  ranked_questions = rank(questions, entity)
   # Write ranked questions to a file.
   if not os.path.exists('rank'):
     os.makedirs('rank')
@@ -942,7 +945,7 @@ if __name__ == '__main__':
   log("~ DONE!\n")
 
   log("~ Ranking questions...")
-  ranked_questions = rankQuestions(questions, file_path)
+  ranked_questions = rankQuestions(questions, file_path, global_entity)
   best_questions = ranked_questions[:Nqns]
   # ranked_questions = ranked_questions[:Nqns]
   log("~ DONE!\n")
