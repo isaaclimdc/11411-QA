@@ -46,6 +46,7 @@ log("~ DONE!\n")
 ###### Constants ######
 #######################
 
+WHAT_TAG = "/WHAT"
 PERSON_TAG = "/PERSON"
 ORGANIZATION_TAG = "/ORGANIZATION"
 LOCATION_TAG = "/LOCATION"
@@ -260,6 +261,17 @@ def makeWhoQuestion(words, question_parts):
   for j in xrange(i, len(words)):
     question_parts.append(words[j])
 
+
+  for word in words:
+    if hasTag(word, WHAT_TAG):
+      if question_parts > 2:
+        question_parts[0] = "What"
+        question_parts.pop(1)
+        question_parts = ["[***What***]"] + question_parts
+        print "WHAT TAG!!!!"
+        question = putInQuestionFormat(question_parts)
+        return question
+
   if containsKeyRootWords(words, ['star']):
     question_parts[0] = "What"
     question_parts = ["[What]"] + question_parts
@@ -270,7 +282,7 @@ def makeWhoQuestion(words, question_parts):
 
 # Find sentences that we can turn into
 # simple 'who' questions.
-def makeWhoQuestions(sentences):
+def makeWhoQuestions(sentences, retag_phrases):
   who_questions = []
   for sentence in sentences:
     if isHeader(sentence):
@@ -283,6 +295,7 @@ def makeWhoQuestions(sentences):
     # Reject questions shorter than length 5
     if len(words) >= 5:
       if hasTag(words[0], PERSON_TAG):
+        words = retagWords(words, retag_phrases)
         question = makeWhoQuestion(words, ['Who'])
         question = cleanQuestion(question)
         who_questions.append(question)
@@ -786,8 +799,18 @@ def generateQuestions(tagged_sentences, original_file):
   retag_entities = ["Aries/Aries/NNP/PERSON", "Segue/Segue/NNP/PERSON",
                     "Dementor/Dementor/NNP/PERSON" , "Dementors/Dementors/NNP/PERSON",
                     "Posh/Posh/NNP/PERSON"]
+
+  f = open(original_file)
+  content = f.read()
+  f.close()
+
+  entity = extractEntity(content)
+  if isConstellation(content) or isProgrammingLanguage(content):
+    print "**RETAGGING**"
+    retag_entities.append(entity + '/' + WHAT_TAG)
+
   questions = []
-  questions += makeWhoQuestions(tagged_sentences)
+  questions += makeWhoQuestions(tagged_sentences, retag_entities)
   questions += makeWhenQuestions(tagged_sentences)
   questions += makeWhereQuestions(tagged_sentences)
   questions += makeQuoteQuestions(tagged_sentences)

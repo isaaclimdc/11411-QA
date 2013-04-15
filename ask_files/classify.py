@@ -35,6 +35,15 @@ rules = ['VBD VBD', 'NNP NNS', 'VBD NNS', 'WRB VBD', 'NO-VBD NO-VBG NO-VBN \
     'CONT-JJ-CC-VBN', 'CONT-VBN-CC-JJ',
     'CONT-JJ-CC-VBG', 'CONT-VBG-CC-JJ',
     'CONT-JJ-CC-VBD', 'CONT-VBD-CC-JJ',
+
+    'CONT-CD-VBZ', 'CONT-VBZ-CD',
+    'CONT-CD-VB', 'CONT-VB-CD',
+    'CONT-CD-VBP', 'CONT-VBP-CD',
+    'CONT-CD-VBN', 'CONT-VBN-CD',
+    'CONT-CD-VBG', 'CONT-VBG-CD',
+    'CONT-CD-VBD', 'CONT-VBD-CD',
+
+    'CONT-WP-CD',
     ]
 
 # Do these tokens occur continuously in the tag list.

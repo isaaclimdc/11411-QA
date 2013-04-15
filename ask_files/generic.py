@@ -12,14 +12,18 @@ generic_soccer = [
     'When was [ENTITY] born?',
     'Where was [ENTITY] born?',
     'Where did [ENTITY] grow up?',
-    'What are some notable awards [ENTITY] has won?'
+    'What are some notable awards [ENTITY] has won?',
+    'Did [ENTITY] represent his/her country in a world cup?',
+    'Did [ENTITY] ever play for Barcelona?',
+    'Who is [ENTITY]\'s significant other?',
+    'Has [ENTITY] ever won an olympic gold medal?'
 ]
 
 generic_constellation = [
     'Where is [ENTITY] located?',
     'Is [ENTITY] in the zodiac?',
     'Is [ENTITY] one of the 88 modern constellations?',
-    'Is Ptolemy credited with describing [ENTITY]?'
+    'Is Ptolemy credited with describing [ENTITY]?',
 ]
 
 generic_movie = [
@@ -32,16 +36,18 @@ generic_movie = [
 
 generic_language = [
     'Is [ENTITY] a West Germanic language?',
+    'Is [ENTITY] an Italic language?',
     'Is [ENTITY] a programming language?',
     'Is [ENTITY] a romance language?',
-    'How did [ENTITY] originate?'
+    'How did [ENTITY] originate?',
+    'Describe the origins of [ENTITY] orthography.',
 ]
 
 generic_programming_language = [
     'Who created [ENTITY]?',
     'When was [ENTITY] created?',
     'Why was [ENTITY] created?',
-    'Is [ENTITY] an object oriented language?'
+    'Is [ENTITY] an object oriented language?',
 ]
 
 def makeGenericQuestions(content, tagged_sentences):
