@@ -34,15 +34,15 @@ def generate_confidence(question):
 
   # Questions shouldn't start with these phrases.
   # If question starts with a bad phrase, lower the rank
-  #bad_start_phrase = [
-  #    'who as ', 'who of ',
-  #    'did no ', 'did although ', 'did however ', 'did see ',
-  #    'did follow', 'is no '
-  #]
-  #for bad_phrase in bad_start_phrase:
-  #  bad_index = question.find(bad_phrase)
-  #  if bad_index == 0:
-  #    confidence += VERY_BAD_QUESTION
+  bad_start_phrase = [
+      'who as ', 'who of ',
+      'did no ', 'did although ', 'did however ', 'did see ',
+      'did follow', 'is no '
+  ]
+  for bad_phrase in bad_start_phrase:
+    bad_index = question.find(bad_phrase)
+    if bad_index == 0:
+      confidence += VERY_BAD_QUESTION
 
   rating = rate_sentence(question)
 
