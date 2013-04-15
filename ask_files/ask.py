@@ -268,7 +268,7 @@ def makeWhoQuestion(words, question_parts):
       question_parts[0] = "What"
       question_parts.pop(1)
       question_parts = ["[***What***]"] + question_parts
-      print "WHAT TAG!!!!"
+      log("WHAT TAG!!!!")
       question = putInQuestionFormat(question_parts)
       return question
 
@@ -813,7 +813,7 @@ def generateQuestions(tagged_sentences, original_file):
   global global_entity
   global_entity = entity
   if isConstellation(content) or isProgrammingLanguage(content):
-    print "**RETAGGING**"
+    log("**RETAGGING**")
     retag_entities.append(entity + '/' + WHAT_TAG)
 
   questions = []
@@ -957,9 +957,5 @@ if __name__ == '__main__':
     print cleaned_question.strip()
 
   log("~ DONE!\n")
-
-  # log("~ Writing questions to file...")
-  # writeQuestions(questions, file_path)
-  # log("~ DONE!\n")
 
   #END
