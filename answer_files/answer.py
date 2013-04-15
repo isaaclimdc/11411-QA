@@ -147,8 +147,8 @@ def cleanQuestion(question):
       'how many',
       'when did', 'why did', 'where did', 'who did', 'what did'
       'when was', 'why was', 'where was', 'who was', 'what was',
-      'what does'
-      'name the', 'is the'
+      'what does',
+      'name the', 'is the',
       'what', 'where', 'why', 'when', 'who', 'which', 'how', 'did', 'name',
       'does']
 
@@ -211,8 +211,10 @@ def isNoQuestion(question, answer):
 def processAnswer(closestSentence, question, distance):
   # Doing a distance check because they could have asked a vague question which
   # makes no sense and if the distance is high, we don't just want to say
-  # yes/no.
-  if distance <= 2 and isYesNoQuestion(question):
+  # yes/no.... For example, for the question "Is hindi a west germanic
+  # language", the answer is no but we would say yes. With this check in place,
+  # we now describe what Hindi is instead of saying 'Yes'.
+  if distance <= 1 and isYesNoQuestion(question):
     if isNoQuestion(question, closestSentence):
       return genNoAns()
     else:
