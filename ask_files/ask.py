@@ -416,12 +416,14 @@ def makeWhereQuestions(sentences):
               break
         if hasTag(words[verb_index], "/VBD") and not hasRootWord(words[verb_index], "be"):
           if hasTag(words[0], PERSON_TAG) or hasTag(words[0], LOCATION_TAG):
-            question_parts = ["did"] + [words[0]]  
+            question_parts = ["did"] + [words[0]]
           else:
             question_parts = ["did"] + [words[0].lower()]
           question_parts = question_parts + words[1:verb_index] + [fixTense(words[verb_index])]
         else:
           question_parts = [words[verb_index]] + words[:verb_index]
+          if len(question_parts) < 2:
+            continue
           if not (hasTag(question_parts[1], PERSON_TAG) or hasTag(question_parts[1], LOCATION_TAG)):
             question_parts[1] = question_parts[1].lower()
         if include_in_word:
@@ -437,7 +439,7 @@ def makeWhereQuestions(sentences):
       elif found_potential_location:
         found_potential_location = False
       i+=1
-    
+
   #found_verb = False
   #for i in xrange(start_index, end_index):
   #  if (hasTag(words[i], VERB_TAG_1) or hasTag(words[i], VERB_TAG_2)) and not found_verb:
@@ -454,8 +456,8 @@ def makeWhereQuestions(sentences):
   return where_questions
 
 
-    
-    
+
+
     # Special case time!
 #    else:
  #     index = containsSpecialCase(words, ['grow', 'up'])
