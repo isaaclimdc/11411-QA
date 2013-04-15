@@ -164,7 +164,7 @@ def cleanQuestion(question):
 def cleanAnswer(answer):
   exclude = set(string.punctuation)
   answer = ''.join(ch for ch in answer.lower() if ch not in exclude)
-  
+
   return answer
 
 
@@ -200,16 +200,19 @@ def isYesNoQuestion(question):
   return False
 
 def isNoQuestion(question, answer):
-  if "not" in question:
-    if "not" in answer:
+  if " not " in question:
+    if " not " in answer:
       return False
     else:
       return True
   else:
     return False
 
-def processAnswer(closestSentence, question):
-  if isYesNoQuestion(question):
+def processAnswer(closestSentence, question, distance):
+  # Doing a distance check because they could have asked a vague question which
+  # makes no sense and if the distance is high, we don't just want to say
+  # yes/no.
+  if distance <= 2 and isYesNoQuestion(question):
     if isNoQuestion(question, closestSentence):
       return genNoAns()
     else:
@@ -221,7 +224,7 @@ def computeDistances(articleFile, questionFile):
   global glob_syn_dict
   answerArray = splitIntoSentences2(articleFile)
   questionArray = makeSentenceArray(questionFile)
-  
+
   for question in questionArray:
     # Remove punctuations.
     question_edited = cleanQuestion(question)
@@ -245,7 +248,7 @@ def computeDistances(articleFile, questionFile):
         closestSentence = answer
         sentenceDistance = count
 
-    answer = processAnswer(closestSentence, question)
+    answer = processAnswer(closestSentence, question, sentenceDistance)
 
     log("-------")
     log("Question sentence:")
