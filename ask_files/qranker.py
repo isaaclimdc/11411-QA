@@ -14,7 +14,7 @@ INITIAL_CONFIDENCE = 0
 
 # Given a questions, generate a confidence score.
 # Higher score is better
-def generate_confidence(question):
+def generate_confidence(question, entity):
 
   confidence = INITIAL_CONFIDENCE;
 
@@ -37,12 +37,16 @@ def generate_confidence(question):
   bad_start_phrase = [
       'who as ', 'who of ',
       'did no ', 'did although ', 'did however ', 'did see ',
-      'did follow', 'is no '
+      'did follow ', 'did class ', 'is no ',
+      'who [ENTITY] ', 'what [ENTITY] ', 'when [ENTITY] ', 'how [ENTITY]'
   ]
+
+  lower_question = question.lower()
   for bad_phrase in bad_start_phrase:
-    bad_index = question.find(bad_phrase)
+    bad_phrase = bad_phrase.replace('[ENTITY]', entity.lower())
+    bad_index = lower_question.find(bad_phrase)
     if bad_index == 0:
-      confidence += VERY_BAD_QUESTION
+      confidence += VERY_BAD_QUESTION * 2
 
   rating = rate_sentence(question)
 
@@ -55,12 +59,12 @@ def generate_confidence(question):
 
   return confidence
 
-def rank(questions):
+def rank(questions, entity):
   # Generate confidence scores.
   confidence_map = {}
   for question in questions:
     question = question.strip()
-    confidence_map[question] = generate_confidence(question)
+    confidence_map[question] = generate_confidence(question, entity)
 
   # Sort into tuple (question, score).
   sorted_questions = sorted(confidence_map.iteritems(), key=operator.itemgetter(1))
