@@ -193,6 +193,8 @@ def isYesNoQuestion(question):
   parts = question.split()
   if parts[0].lower() == "is" or \
      parts[0].lower() == "did" or \
+     parts[0].lower() == "does" or \
+     parts[0].lower() == "are" or \
      parts[0].lower() == "has":
     return True
   return False
