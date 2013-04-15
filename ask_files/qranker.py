@@ -12,7 +12,6 @@ VERY_GOOD_QUESTION = -VERY_BAD_QUESTION
 
 INITIAL_CONFIDENCE = 0
 
-# TODO: add various criteria to determine what makes a question bad/good
 # Given a questions, generate a confidence score.
 # Higher score is better
 def generate_confidence(question):

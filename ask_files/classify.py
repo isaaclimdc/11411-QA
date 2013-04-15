@@ -11,7 +11,47 @@ import nltk
 # the sentence, it is considered bad
 # The rule DIFF-3 says the rule passes if the sentence only has 3 unique tags
 rules = ['VBD VBD', 'NNP NNS', 'VBD NNS', 'WRB VBD', 'NO-VBD NO-VBG NO-VBN \
-    NO-VBP NO-VBZ NO-VB NO-JJ', 'MAXLEN-8 VBZ VBN', 'UNREQ-. UNREQ-, DIFF-2']
+    NO-VBP NO-VBZ NO-VB NO-JJ', 'MAXLEN-8 VBZ VBN', 'UNREQ-. UNREQ-, DIFF-2',
+
+    'CONT-VBZ-CC-NNP', 'CONT-VBZ-CC-NNS',
+    'CONT-VB-CC-NNP', 'CONT-VB-CC-NNS',
+    'CONT-VBP-CC-NNP', 'CONT-VBP-CC-NNS',
+    'CONT-VBN-CC-NNP', 'CONT-VBN-CC-NNS',
+    'CONT-VBG-CC-NNP', 'CONT-VBG-CC-NNS',
+    'CONT-VBD-CC-NNP', 'CONT-VBD-CC-NNS',
+    'CONT-JJ-CC-NNP', 'CONT-JJ-CC-NNS',
+
+    'CONT-NNP-CC-VBZ', 'CONT-NNS-CC-VBZ',
+    'CONT-NNP-CC-VB', 'CONT-NNS-CC-VB',
+    'CONT-NNP-CC-VBP', 'CONT-NNS-CC-VBP',
+    'CONT-NNP-CC-VBN', 'CONT-NNS-CC-VBN',
+    'CONT-NNP-CC-VBG', 'CONT-NNS-CC-VBG',
+    'CONT-NNP-CC-VBD', 'CONT-NNS-CC-VBD',
+    'CONT-NNP-CC-JJ', 'CONT-NNS-CC-JJ',
+
+    'CONT-JJ-CC-VBZ', 'CONT-VBZ-CC-JJ',
+    'CONT-JJ-CC-VB', 'CONT-VB-CC-JJ',
+    'CONT-JJ-CC-VBP', 'CONT-VBP-CC-JJ',
+    'CONT-JJ-CC-VBN', 'CONT-VBN-CC-JJ',
+    'CONT-JJ-CC-VBG', 'CONT-VBG-CC-JJ',
+    'CONT-JJ-CC-VBD', 'CONT-VBD-CC-JJ',
+    ]
+
+# Do these tokens occur continuously in the tag list.
+def occur_continuously(tags, tokens):
+  last_index = -1
+  for token in tokens:
+    if token not in tags:
+      return False
+
+    index = tags.index(token)
+    if last_index == -1:
+      last_index = index
+    elif last_index + 1 == index:
+      last_index = index
+    else:
+      return False
+  return True
 
 # Check if the rule is present.
 def apply_rule(rule, tags):
@@ -38,6 +78,10 @@ def apply_rule(rule, tags):
       if token.split('-')[1] in tags:
         # Remove all occurences of this.
         tags = filter (lambda a: a != token.split('-')[1], tags)
+
+    elif 'CONT-' in token:
+      if not occur_continuously(tags, token.split('-')[1:]):
+        return False
 
     # Tag must be present for the rule to pass.
     else:
@@ -108,10 +152,11 @@ if __name__ == '__main__':
       if item == 'Bad':
         bad_count = bad_count + 1
 
+      if prev_answer == 'Good':
+        labelled_good.append(prev_sentence)
+
       if item == prev_answer:
         correct = correct + 1
-        if item == 'Good':
-          labelled_good.append(prev_sentence)
         # Check if there was a rule that was applied
         if prev_rule != '':
           if prev_rule in correct_stats:
