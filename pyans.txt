@@ -1,0 +1,11 @@
+Python (programming language)
+Definitely.
+Definitely.
+Python has also seen extensive use in the information security industry, including exploit development.
+Nuitka is an ahead of time compiler for Python 2.
+Yup.
+Python has a large and comprehensive standard library.
+Yes.
+Nuitka is an ahead of time compiler for Python 2.
+Yup.
+Definitely.

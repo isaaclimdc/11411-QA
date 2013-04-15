@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/afs/andrew.cmu.edu/usr/ysim/python-411/bin/python
 
 import argparse, os, sys, string, re, subprocess, ntpath, nltk.data, random
 from qranker import rank
@@ -20,27 +20,28 @@ parser.add_argument("--tagged", help="Corresponding tagged file. Adding this \
 args = parser.parse_args()
 
 # Check dependencies
-def checkDependencies(satis):
-  if satis and \
-    os.path.isdir("../libraries/en") and \
-    os.path.isdir("../libraries/stanford-corenlp"):
+def checkDependencies():
+  if os.path.isdir("../libraries/en") and \
+     os.path.isdir("../libraries/stanford-corenlp"):
     return
   else:
-    print("Dependencies not installed.\nRun ./dep.sh")
-    sys.exit(0)
+    log("Dependencies not installed! Installing...")
+    os.chdir(os.pardir)
+    subprocess.check_call(['./dep.sh'])
+    os.chdir('ask_files')
 
 if len(sys.argv) < 2:
   print 'Usage: ./ask.py <article_file>\n'
   sys.exit(0)
 
 log("~ Importing required libraries...")
-checkDependencies(True)
+checkDependencies()
 lib_path = os.path.abspath('../libraries')
 sys.path.append(lib_path)
 
 # from nltk_helper import splitIntoSentences2, getSynonyms
 import en
-log("~ DONE!\n")
+log("~ DONE!")
 
 #######################
 ###### Constants ######

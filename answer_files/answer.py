@@ -25,7 +25,7 @@ WORD_THRESHOLD = 2
 glob_syn_dict = dict()
 
 NO_VARS = ["No.", "Nope.", "That's a negative!"]
-YES_VARS = ["Yes.", "Yup.", "Yes indeed!", "Definitely.", "Certainly."]
+YES_VARS = ["Yes.", "Yup.", "Yes indeed!", "Definitely.", "Certainly.", "Sure."]
 
 ##############################
 ###### Helper functions ######

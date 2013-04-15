@@ -1,4 +1,4 @@
-# Check for proper number of command line args.
+#!/bin/bash
 
 EXPECTED_ARGS=2
 E_BADARGS=65
@@ -9,5 +9,7 @@ then
   exit $E_BADARGS
 fi
 
+export NLTK_DATA=/afs/andrew.cmu.edu/usr/ysim/nltk_data
+
 cd answer_files
-python answer.py ../$1 ../$2
+./answer.py ../$1 ../$2
