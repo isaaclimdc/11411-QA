@@ -1,4 +1,4 @@
-import operator, re
+import operator, re, random
 from classify import rate_sentence
 
 # Scores to add to the confidence.
@@ -18,14 +18,14 @@ def generate_confidence(question, entity):
 
   confidence = INITIAL_CONFIDENCE;
 
-  # Generic and specific questions are very good by default. I subtract two from
-  # the score to rank specific questions higher than generic questions. Also, if
-  # we've generated a VERY_GOOD_QUESTION by some other means, this ensures it is
-  # ranked higher than the generic and specific questions.
+  # Generic and specific questions are very good by default.
+  # There is a hint of randomness so that we don't give out the same generic
+  # questions for every article. The randomness also helps distribute these
+  # questions with the questions we actually generate.
   if '[GENERIC]' in question:
-    return VERY_GOOD_QUESTION - 2
+    return VERY_GOOD_QUESTION + random.randint(-10, 10)
   if '[SPECIFIC]' in question:
-    return VERY_GOOD_QUESTION - 1
+    return VERY_GOOD_QUESTION + random.randint(-10, 12)
 
   # Get rid of question label.
   replace_regex = re.compile('^\[.*\]', re.IGNORECASE)
@@ -51,7 +51,7 @@ def generate_confidence(question, entity):
   rating = rate_sentence(question)
 
   if rating == "Good":
-    confidence += VERY_GOOD_QUESTION
+    confidence += VERY_GOOD_QUESTION + random.randint(-50, 10)
   elif rating == "Bad":
     confidence += VERY_BAD_QUESTION
   elif rating == "Ok":
