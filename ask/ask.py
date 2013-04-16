@@ -148,7 +148,7 @@ def containsKeyRootWords(words, root_words):
 # In 1902, Bob did this. and the
 # index is in the second half
 # of the sentence, it will find the
-# index Bob is at. 
+# index Bob is at.
 def findBeginningOfSegment(words, i):
   for j in range(i, -1, -1):
     if hasTag(words[j], "/,"):
@@ -167,7 +167,7 @@ def fixTense(word):
 def removeTagsFromWords(question_parts):
  for i in range(len(question_parts)):
     question_parts[i] = removeTag(question_parts[i])
- return question_parts  
+ return question_parts
 
 def putInQuestionFormat(question_parts):
   question_parts = removeTagsFromWords(question_parts)
@@ -202,7 +202,7 @@ def makeWhoQuestion(words, question_parts):
      # question_parts[len(question_parts)-1] = prev_word + word
     #else:
     question_parts.append(words[j])
-  
+
   if containsKeyRootWords(words, ['star']):
     question_parts[0] = "What"
   #question_parts = question_parts + words
@@ -326,7 +326,7 @@ def makeWhereQuestions(sentences):
 def recClean(parts):
   if len(parts) == 0:
       return parts
-      
+
   firstWord = parts[0]
   lastWord = parts[-1]
   if firstWord == "on" or firstWord == "." or \
@@ -410,20 +410,20 @@ def makeQuoteQuestions(tagged_sentences):
         start_index = i
       elif found_quote and hasTag(words[i], "/''"):
 #        print "words", words
-        # Entire sentence is a quote, so chances are 
+        # Entire sentence is a quote, so chances are
         # someone said it. We also want to remove edge cases like
         # Clint 'Drew' Dempsey so length must be greater than 4.
         if ((start_index == 0 and (i == (len(words) - 1))) or
            ((i - start_index > 4) and containsKeyRootWords(words, root_words))):
           # There are some quotes we don't want such as
           # what someone's shirt said.
-          question_parts = words[start_index + 1 : i] 
+          question_parts = words[start_index + 1 : i]
           question_parts = removeTagsFromWords(question_parts)
           question_parts = removePunctuation(question_parts)
           question_parts = [words[start_index]] + question_parts + [words[i]]
           question_parts = appendQuotes(question_parts)
           question_parts = ['[QUOTE]', 'Who', 'said'] + question_parts
-          question = putInQuestionFormat(question_parts)       
+          question = putInQuestionFormat(question_parts)
           quote_questions.append(question)
           print question
         found_quote = False
@@ -458,7 +458,7 @@ def makeYesNoQuestion(tagged_sentences):
             if hasTag(words[j], "/VB"):
               words[j] = fixTense(words[j])
               break
-        if not (hasTag(words[0], PERSON_TAG) or 
+        if not (hasTag(words[0], PERSON_TAG) or
                 hasTag(words[0], ORGANIZATION_TAG) or
                 hasTag(words[0], LOCATION_TAG)):
           words[0] = words[0].lower()
@@ -468,8 +468,6 @@ def makeYesNoQuestion(tagged_sentences):
         #print "sentence", sentence
         question = putInQuestionFormat(question_parts)
         yes_no_questions.append(question)
-        print question
-        print
         break
   return yes_no_questions
 
@@ -572,7 +570,7 @@ def preprocessFile(file_path):
 # TODO(mburman): let user specify logging level
 if __name__ == '__main__':
   file_path = args.txt
-  
+
   original_file = '../test_data/' + file_path
   if args.tagged:
     file_path = args.tagged
