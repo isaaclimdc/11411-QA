@@ -12,9 +12,20 @@ import nltk
 # The rule DIFF-3 says the rule passes if the sentence only has 3 unique tags
 
 # These are strong rules and remove a lot of good sentences too
-ok_rules = ['NNP NNS', 'VBD NNS']
+ok_rules = ['NNP NNS', 'VBD NNS', 'VBP VBG']
 
-rules = ['VBD VBD', 'WRB VBD', 'NO-VBD NO-VBG NO-VBN \
+rules = [
+    'CONT-WRP-NN',
+    'CONT-WRP-NNP',
+    'CONT-WRP-NP',
+    'CONT-WRP-NPS',
+
+    'CONT-WP-NN',
+    'CONT-WP-NNP',
+    'CONT-WP-NP',
+    'CONT-WP-NPS',
+
+    'VBD VBD', 'WRB VBD', 'NO-VBD NO-VBG NO-VBN \
     NO-VBP NO-VBZ NO-VB NO-JJ', 'MAXLEN-8 VBZ VBN', 'UNREQ-. UNREQ-, DIFF-2',
 
     'CONT-VBZ-CC-NNP', 'CONT-VBZ-CC-NNS',

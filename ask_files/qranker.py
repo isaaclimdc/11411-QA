@@ -23,9 +23,9 @@ def generate_confidence(question, entity):
   # questions for every article. The randomness also helps distribute these
   # questions with the questions we actually generate.
   if '[GENERIC]' in question:
-    return VERY_GOOD_QUESTION + random.randint(-10, 10)
+    return VERY_GOOD_QUESTION + random.randint(5, 15)
   if '[SPECIFIC]' in question:
-    return VERY_GOOD_QUESTION + random.randint(-10, 12)
+    return VERY_GOOD_QUESTION + random.randint(-10, 10)
 
   # Get rid of question label.
   replace_regex = re.compile('^\[.*\]', re.IGNORECASE)
@@ -46,22 +46,22 @@ def generate_confidence(question, entity):
     bad_phrase = bad_phrase.replace('[ENTITY]', entity.lower())
     bad_index = lower_question.find(bad_phrase)
     if bad_index == 0:
-      confidence += VERY_BAD_QUESTION * 2
+      confidence += VERY_BAD_QUESTION * 5
 
   bad_mid_phrase = [
-      ' who wish ', ' who not ', ' : ',
+      ' who wish ', ' who not ', ' : ', ' ; ', ' the?', ' any?'
   ]
 
   for bad_phrase in bad_mid_phrase:
     bad_phrase = bad_phrase.replace('[ENTITY]', entity.lower())
     bad_index = lower_question.find(bad_phrase)
     if bad_index > 10:
-      confidence += VERY_BAD_QUESTION * 2
+      confidence += VERY_BAD_QUESTION * 5
 
   rating = rate_sentence(question)
 
   if rating == "Good":
-    confidence += VERY_GOOD_QUESTION + random.randint(-50, 10)
+    confidence += VERY_GOOD_QUESTION + random.randint(-30, 10)
   elif rating == "Bad":
     confidence += VERY_BAD_QUESTION
   elif rating == "Ok":
