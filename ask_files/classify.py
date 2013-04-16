@@ -15,6 +15,8 @@ import nltk
 ok_rules = ['NNP NNS', 'VBD NNS', 'VBP VBG']
 
 rules = [
+    'RB RB RB RB',
+    'CONT-WP-*NONE*',
     'CONT-IN-.',
     'CONT-WRB-VBD-IN',
     'CONT-WP-VBD-IN',
@@ -71,6 +73,7 @@ rules = [
 def occur_continuously(tags, tokens):
   last_index = -1
   for token in tokens:
+    token = token.replace('*', '-')
     if token not in tags:
       return False
 
