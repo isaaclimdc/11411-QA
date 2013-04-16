@@ -64,7 +64,7 @@ def generate_confidence(question, entity):
     confidence += VERY_GOOD_QUESTION + random.randint(-30, 10)
     # Rank these questions higher
     if '[WHERE]' in question or '[WHAT]' in question or '[WHO]' in question:
-      confidence += random.randint(0, 20)
+      confidence += random.randint(0, 5)
   elif rating == "Bad":
     confidence += VERY_BAD_QUESTION
   elif rating == "Ok":
