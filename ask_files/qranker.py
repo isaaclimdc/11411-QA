@@ -55,7 +55,7 @@ def generate_confidence(question, entity):
   for bad_phrase in bad_mid_phrase:
     bad_phrase = bad_phrase.replace('[ENTITY]', entity.lower())
     bad_index = lower_question.find(bad_phrase)
-    if bad_index > 10:
+    if bad_index > 0:
       confidence += VERY_BAD_QUESTION * 5
 
   rating = rate_sentence(question)
