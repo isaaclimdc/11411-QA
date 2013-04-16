@@ -1,0 +1,15 @@
+When was Perl created?
+Why was Perl created?
+Is perl's performance in the benchmarks game typical for interpreted languages?
+Was Wall not trained as a linguist?
+Has the code been optimized for performance at the expense of simplicity, clarity, and strong internal interfaces?
+Was the latest version of that branch, 5.14.3, released on October 12, 2012?
+Does perl also take features from shell programming?
+Does perl syntax reflect the idea that 'things that are different should look different .'?
+What's performance in the benchmarks game is typical for interpreted languages?
+Did initial design of Perl 5 continue into 1994?
+Is the latest version of Perl 5.8 not 5.8.9, released December 14, 2008?
+Who's PPI project focused on parsing Perl code as a document, instead of parsing Perl as executable code?
+Is the Cygwin emulation layer another way of running Perl under Windows?
+Did this lead to a decision to begin work on a redesign of the language, to be called Perl 6?
+Does Development discussion take place via the perl5_porters mailing list?

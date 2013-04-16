@@ -1,0 +1,15 @@
+Python (programming language)
+Nuitka is an ahead of time compiler for Python 2.
+Definitely.
+Certainly.
+Python's development practices have also been emulated by other languages.
+Yes.
+Certainly.
+Sure.
+Certainly.
+Nope.
+Yup.
+Yes.
+Yes.
+Definitely.
+Examples of the use of this prefix in names of Python applications or libraries include Pygame, a binding of SDL to Python (commonly used to create games); PyS60, an implementation for the Symbian S60 operating system; PyQt and PyGTK, which bind Qt and GTK, respectively, to Python; and PyPy, a Python implementation written in Python.

@@ -1,0 +1,15 @@
+The goal of Java is to make all implementations of Java compatible.
+A class that is not declared public may be stored in any .java file.
+However, the applet tag is deprecated, so the object tag is preferred where supported.
+Java (programming language)
+Certainly.
+Gosling aimed to implement a virtual machine and a language that had a familiar C/C++ style of notation.
+Java (programming language)
+Yes.
+Sure.
+A servlet can almost be thought of as an applet that runs on the server side—without a face.
+Nope.
+OddEven() is a public constructor.
+Sure.
+Yes indeed!
+Yes.

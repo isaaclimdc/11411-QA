@@ -1,0 +1,15 @@
+Why was Python created?
+Did Cython and Pyrex compile to C. Nuitka is an ahead of time compiler for Python 2?
+Does the pass statement, which serve as a NOP?
+Does Pardus use it for administration?
+What's development practices have also been emulated by other languages?
+Is CPython distributed with a large standard library written in a mixture of C?
+Is each element of a slice a shallow copy?
+Is beautiful better than ugly?
+Is python's operator may be used to compare object identities?
+Is Python an object oriented language?
+Is python's development conducted largely through the Python Enhancement Proposal process?
+Is CPython managed by the non-profit Python Software Foundation?
+Is python available on Android as an option as part of the Android Scripting Environment?
+Does enhancement of the language go along with development of the CPython reference implementation?
+When was Python created?

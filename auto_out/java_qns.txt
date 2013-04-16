@@ -1,0 +1,15 @@
+When was Java created?
+When did A class that is not declared public?
+Is the applet tag deprecated, so the object tag is preferred where supported?
+Who created Java?
+Is the calculat method declared without the static keyword?
+Who aimed to implement a virtual machine and a language that had a familiar C\ + + style of notation?
+Why was Java created?
+Does Apple also provide an Aqua look?
+Is platform-independent Java essential to Java EE?
+Does a servlet can almost be thought of as an applet that run on the server side - without a face?
+Is Java an object oriented language?
+Is OddEve a public constructor?
+Is the name of the class file the name of the class, with?
+Has this process been a subject of controversy?
+Does this environment enable portable server-side applications?

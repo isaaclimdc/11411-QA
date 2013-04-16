@@ -1,0 +1,15 @@
+Perl was originally developed by Larry Wall in 1987 as a general-purpose Unix scripting language to make report processing easier.
+Perl was originally developed by Larry Wall in 1987 as a general-purpose Unix scripting language to make report processing easier.
+Yup.
+Wall was trained as a linguist, and the design of Perl is very much informed by linguistic principles.
+Yes.
+The latest version of that branch, 5.14.3, was released on October 12, 2012.
+Sure.
+Yes indeed!
+Perl's performance in the benchmarks game is typical for interpreted languages.
+Definitely.
+The latest version of Perl 5.8 is 5.8.9, released December 14, 2008.
+Adam Kennedy's PPI project focused on parsing Perl code as a document (retaining its integrity as a document), instead of parsing Perl as executable code (which not even Perl itself can always do).
+Definitely.
+Sure.
+Yup.

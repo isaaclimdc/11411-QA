@@ -1,0 +1,16 @@
+#!/bin/bash
+
+mkdir -p auto_out
+
+FILES=test_data/*
+for f in $FILES
+do
+    fbname=`basename "$f" "_ans.txt"`
+    echo "~ Generating 15 questions for \"$f\"..."
+    outfile1="auto_out/"$fbname"_qns.txt"
+    ./ask $f 15 > $outfile1
+
+    echo "~ Answering the questions in \"$outfile1\"..."
+    outfile2="auto_out/"$fbname".txt"
+    ./answer $f $outfile1 > $outfile2
+done
