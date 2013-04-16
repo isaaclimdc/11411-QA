@@ -59,6 +59,31 @@ def makeGenericQuestions(content, tagged_sentences):
     return to_return
 
   log("~ Entity: " + entity)
+
+  unique = 0
+  if isSoccer(content):
+    log("Soccer")
+    unique += 1
+  if isConstellation(content):
+    log("Constellation")
+    unique += 1
+  if isProgrammingLanguage(content):
+    log("Programming Language")
+    unique += 1
+  if isLanguage(content):
+    log("Language")
+    unique += 1
+  if isMovie(content):
+    log("Movie")
+    unique += 1
+
+  if unique == 0:
+    log("ERROR: category not found.")
+  elif unique == 2:
+    log("ERROR: multiple categories found")
+  else:
+    log("Category found!")
+
   if isSoccer(content):
     for question in generic_soccer:
       question = question.replace('[ENTITY]', entity)
@@ -91,3 +116,4 @@ def makeGenericQuestions(content, tagged_sentences):
 
   log("!!!!!PROBLEM!!!!! .... CATEGORY NOT IDENTIFIED ... TELL MANISH THIS \
       HAPPENED")
+  return to_return

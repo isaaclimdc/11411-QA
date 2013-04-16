@@ -15,10 +15,13 @@ import nltk
 ok_rules = ['NNP NNS', 'VBD NNS', 'VBP VBG']
 
 rules = [
-    'CONT-WRP-NN',
-    'CONT-WRP-NNP',
-    'CONT-WRP-NP',
-    'CONT-WRP-NPS',
+    'WRB VBN',
+    'CONT-WRB-VBN',
+
+    'CONT-WRB-NN',
+    'CONT-WRB-NNP',
+    'CONT-WRB-NP',
+    'CONT-WRB-NPS',
 
     'CONT-WP-NN',
     'CONT-WP-NNP',

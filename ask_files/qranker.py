@@ -49,7 +49,7 @@ def generate_confidence(question, entity):
       confidence += VERY_BAD_QUESTION * 5
 
   bad_mid_phrase = [
-      ' who wish ', ' who not ', ' : ', ' ; ', ' the?', ' any?'
+      ' who wish ', ' who not ', ' : ', ' ; ', ' the?', ' any?', ' also?',
   ]
 
   for bad_phrase in bad_mid_phrase:

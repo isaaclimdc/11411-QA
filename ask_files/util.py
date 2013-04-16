@@ -14,9 +14,9 @@ def extractEntity(content):
 # TODO(mburman): These checks need to be stronger.
 def isSoccer(content):
   content = content.lower()
-  soccer_signals = ['club', 'goals']
+  soccer_signals = ['club', 'goals', 'team']
   if all(x in content for x in soccer_signals):
-    extra_signals = ['competition', 'team', 'soccer', 'score']
+    extra_signals = ['competition', 'soccer', 'score']
     if any(y in content for y in extra_signals):
       return True
 
@@ -46,7 +46,7 @@ def isLanguage(content):
 
 def isMovie(content):
   content = content.lower()
-  movie_signals = ['directed', 'film']
+  movie_signals = ['directed', 'film', 'movie', 'set']
   if all(x in content for x in movie_signals):
     extra_signals = ['star', 'played']
     if any(y in content for y in extra_signals):
