@@ -795,7 +795,9 @@ def cleanQuestion(question):
       ' -rrb-' : ')',
       '--'     : '-',
       '-LRB-'  : '(',
-      ' -RRB-' : ')'
+      ' -RRB-' : ')',
+      '``'     : '\'',
+      '\'\''   : '\''
   }
   question = reduce(lambda a, kv: a.replace(*kv), repls.iteritems(), question)
   return question
