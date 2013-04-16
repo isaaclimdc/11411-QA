@@ -28,7 +28,7 @@ rules = [
     'CONT-WP-NP',
     'CONT-WP-NPS',
 
-    'VBD VBD', 'WRB VBD', 'NO-VBD NO-VBG NO-VBN \
+    'VBD VBD', 'NO-VBD NO-VBG NO-VBN \
     NO-VBP NO-VBZ NO-VB NO-JJ NO-RB', 'MAXLEN-8 VBZ VBN', 'UNREQ-. UNREQ-, DIFF-2',
 
     'CONT-VBZ-CC-NNP', 'CONT-VBZ-CC-NNS',
