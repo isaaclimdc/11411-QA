@@ -23,7 +23,7 @@ def generate_confidence(question, entity):
   # questions for every article. The randomness also helps distribute these
   # questions with the questions we actually generate.
   if '[GENERIC]' in question:
-    return VERY_GOOD_QUESTION + random.randint(5, 15)
+    return VERY_GOOD_QUESTION + random.randint(0, 15)
   if '[SPECIFIC]' in question:
     return VERY_GOOD_QUESTION + random.randint(-10, 10)
 
