@@ -5,6 +5,7 @@ lib_path = os.path.abspath('../libraries')
 sys.path.append(lib_path)
 from nltk_helper import splitIntoSentences2, getSynonyms
 from random import randint
+from util import *
 
 # Print only to stderr
 def log(s):
@@ -23,6 +24,7 @@ WORD_THRESHOLD = 2
 
 # Synonym dict. Reset for every question.
 glob_syn_dict = dict()
+global_entity = ''
 
 NO_VARS = ["No.", "Nope.", "That's a negative!"]
 YES_VARS = ["Yes.", "Yup.", "Yes indeed!", "Definitely.", "Certainly.", "Sure."]
@@ -208,7 +210,74 @@ def isNoQuestion(question, answer):
   else:
     return False
 
-def processAnswer(closestSentence, question, distance):
+def processAnswer(closestSentence, question, distance, content):
+  global global_entity
+  yesno_answer_list = [
+      'Is [entity] one of the 88 modern constellations?',
+      'Is [entity] in the zodiac?',
+      'Is Ptolemy credited with describing [entity]?',
+      'Is [entity] a British film?',
+      'Is [entity] a West Germanic language?',
+      'Is [entity] an Italic language?',
+      'Is [entity] a programming language?',
+      'Is [entity] a romance language?',
+      'Is [entity] an object oriented language?'
+  ]
+
+  question = question.lower()
+  global_entity = global_entity.lower()
+  for yesno in yesno_answer_list:
+    yesno = yesno.lower()
+    yesno = yesno.replace('[entity]', global_entity)
+    content = content.lower()
+    if yesno == question:
+      log("ANSWERING OUR QUESTION")
+      if 'constellations' in question:
+        if isConstellation(content):
+          return genYesAns()
+        else:
+          return genNoAns()
+      if 'zodiac' in question:
+        if 'zodiac' in content:
+          return genYesAns()
+        else:
+          return genNoAns()
+      if 'ptolemy' in question:
+        if 'ptolemy' in content:
+          return genYesAns()
+        else:
+          return genNoAns()
+      if 'british' in question:
+        if 'british' in content:
+          return genYesAns()
+        else:
+          return genNoAns()
+      if 'west germanic' in question:
+        if 'west germanic' in content:
+          return genYesAns()
+        else:
+          return genNoAns()
+      if 'italic' in question:
+        if 'italic' in content:
+          return genYesAns()
+        else:
+          return genNoAns()
+      if 'programming' in question:
+        if 'programming' in content:
+          return genYesAns()
+        else:
+          return genNoAns()
+      if 'object oriented' in question:
+        if 'object oriented' in content:
+          return genYesAns()
+        else:
+          return genNoAns()
+      if 'romance' in question:
+        if 'romance' in content:
+          return genYesAns()
+        else:
+          return genNoAns()
+
   # Doing a distance check because they could have asked a vague question which
   # makes no sense and if the distance is high, we don't just want to say
   # yes/no.... For example, for the question "Is hindi a west germanic
@@ -224,6 +293,14 @@ def processAnswer(closestSentence, question, distance):
 
 def computeDistances(articleFile, questionFile):
   global glob_syn_dict
+  global global_entity
+
+  f = open(articleFile)
+  content = f.read()
+  f.close()
+  global_entity = extractEntity(content)
+  log('Entity: ' + global_entity)
+
   answerArray = splitIntoSentences2(articleFile)
   questionArray = makeSentenceArray(questionFile)
 
@@ -250,7 +327,7 @@ def computeDistances(articleFile, questionFile):
         closestSentence = answer
         sentenceDistance = count
 
-    answer = processAnswer(closestSentence, question, sentenceDistance)
+    answer = processAnswer(closestSentence, question, sentenceDistance, content)
 
     log("-------")
     log("Question sentence:")
