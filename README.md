@@ -18,7 +18,7 @@ level of the project directory. This project requires:
 - Stanford CoreNLP Package
 - NodeBox Linguistics Package
 
-All the above dependencies can be installed by simply running `./dep.sh` at the root of the project directory. The dependencies will be downloaded and installed into the `libraries` directory.
+All the above dependencies can be installed by simply running `./dep.sh` at the root of the project directory. The dependencies will be downloaded and installed into the `libraries` directory. Note that running `./ask` will auto-download the required dependencies.
 
 Ask
 ---
@@ -31,3 +31,9 @@ Answer
 `./answer <article.txt> <questions.txt>`
 
 This will answer the questions in `questions.txt` (1 per line), looking for the answers in `article.txt`. Redirecting (`>`) the output will send ONLY the answers to a file.
+
+Robot
+-----
+`./robot.py <article.txt>`
+
+This is REPL interface for answering question typed into stdin regarding `article.txt`.
