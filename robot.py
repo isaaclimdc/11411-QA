@@ -2,16 +2,7 @@
 
 import os, sys, subprocess, ntpath
 
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print 'Usage: ./answerrepl.py <article_text>\n'
-        sys.exit(1)
-
-    articleFile = sys.argv[1]
-    baseFile = ntpath.basename(articleFile)
-    print("Question Answerer (" + baseFile + ")")
-    print("-----------------\n")
-
+def startREPL(articleFile):
     while True:
         sys.stdout.write("Enter a question: ")
         userQn = sys.stdin.readline()
@@ -25,3 +16,16 @@ if __name__ == '__main__':
         subprocess.check_call(['./answer', articleFile, tmpFilePath])
         print
 
+        subprocess.check_call(['rm', tmpFilePath])
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print 'Usage: ./robot.py <article_text>\n'
+        sys.exit(1)
+
+    articleFile = sys.argv[1]
+    baseFile = ntpath.basename(articleFile)
+    print("Question Answerer (" + baseFile + ")")
+    print("-----------------\n")
+
+    startREPL(articleFile)

@@ -283,7 +283,7 @@ def processAnswer(closestSentence, question, distance, content):
   # yes/no.... For example, for the question "Is hindi a west germanic
   # language", the answer is no but we would say yes. With this check in place,
   # we now describe what Hindi is instead of saying 'Yes'.
-  if distance <= 4 and isYesNoQuestion(question):
+  if distance <= 1 and isYesNoQuestion(question):
     if isNoQuestion(question, closestSentence):
       return genNoAns()
     else:
